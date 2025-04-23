@@ -52,6 +52,20 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				employIn: {
+					blue: '#0e7eff',
+					darkBlue: '#0055cc',
+					darkBg: '#1a1a1a',
+					darkSidebar: '#0f0f0f',
+					lightText: '#f5f5f5',
+					mediumText: '#a0a0a0',
+					highlight: '#1e293b',
+					pending: '#FF9800',
+					approved: '#10B981',
+					rejected: '#EF4444',
+					banner: '#0a1529',
+					bannerBorder: '#1e3a8a'
+				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',

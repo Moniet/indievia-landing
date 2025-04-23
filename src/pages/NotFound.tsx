@@ -1,26 +1,27 @@
-import { useLocation } from "react-router-dom";
-import { useEffect } from "react";
 
-const NotFound = () => {
-  const location = useLocation();
+import React from 'react';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
-  useEffect(() => {
-    console.error(
-      "404 Error: User attempted to access non-existent route:",
-      location.pathname
-    );
-  }, [location.pathname]);
+const NotFound: React.FC = () => {
+  const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">404</h1>
-        <p className="text-xl text-gray-600 mb-4">Oops! Page not found</p>
-        <a href="/" className="text-blue-500 hover:text-blue-700 underline">
-          Return to Home
-        </a>
+    <DashboardLayout title="Not Found" subtitle="The page you're looking for doesn't exist">
+      <div className="flex flex-col items-center justify-center h-full">
+        <h1 className="text-6xl font-bold text-employIn-blue mb-4">404</h1>
+        <p className="text-xl text-employIn-mediumText mb-8">
+          We couldn't find the page you were looking for.
+        </p>
+        <Button 
+          onClick={() => navigate('/')}
+          className="bg-employIn-blue hover:bg-employIn-darkBlue"
+        >
+          Return to Dashboard
+        </Button>
       </div>
-    </div>
+    </DashboardLayout>
   );
 };
 
