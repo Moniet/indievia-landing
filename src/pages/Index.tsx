@@ -40,6 +40,55 @@ const Layout = ({ children }: PropsWithChildren) => {
   )
 }
 
+const useSubscribe = () => {
+  const [data, setData] = useState<{ email; firstName; industry }>({
+    industry: "",
+    firstName: "",
+    email: ""
+  })
+
+  const onFormChange = (e: any) => {
+    const value = e.target.value
+    const name = e.target.name
+    console.log({
+      value,
+      name
+    })
+    if (["firstName", "industry", "email"].includes(name)) {
+      setData({
+        ...data,
+        [name]: value
+      })
+    }
+  }
+
+  const onSubmit = async (e: any) => {
+    e.preventDefault()
+    try {
+      const res = await fetch(
+        "https://mfebhamkxngghywfgfac.supabase.co/functions/v1/early-access",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(data)
+        }
+      )
+      const resp = await res.json()
+      console.log(resp)
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  return {
+    formData: data,
+    onFormChange,
+    onSubmit
+  }
+}
+
 const Nav = () => {
   const location = useLocation()
   const isAbout = location.pathname.toLowerCase() == "/about"
@@ -80,62 +129,64 @@ const Nav = () => {
 
 const ImageAutoScrollSection = () => {
   return (
-    <div className="w-screen overflow-hidden">
-      <div className="flex items-center overflow-hidden w-[300vw] mt-40">
-        <div className="animate-auto-scroll w-fit flex gap-5 min-w-fit">
-          <img
-            src="/hero-circle-1.png"
-            className="h-[200px] sm:h-[250px] w-auto"
-          />
-          <img
-            src="/hero-circle-2.png"
-            className="h-[200px] sm:h-[250px] w-auto"
-          />
-          <img
-            src="/hero-circle-3.png"
-            className="h-[200px] sm:h-[250px] w-auto"
-          />
-          <img
-            src="/hero-circle-4.png"
-            className="h-[200px] sm:h-[250px] w-auto"
-          />
-          <img
-            src="/hero-circle-5.png"
-            className="h-[200px] sm:h-[250px] w-auto"
-          />
-          <img
-            src="/hero-circle-6.png"
-            className="h-[200px] sm:h-[250px] w-auto"
-          />
-        </div>
-        <div className="animate-auto-scroll w-fit flex gap-5 min-w-fit">
-          <img
-            src="/hero-circle-1.png"
-            className="h-[200px] sm:h-[250px] w-auto"
-          />
-          <img
-            src="/hero-circle-2.png"
-            className="h-[200px] sm:h-[250px] w-auto"
-          />
-          <img
-            src="/hero-circle-3.png"
-            className="h-[200px] sm:h-[250px] w-auto"
-          />
-          <img
-            src="/hero-circle-4.png"
-            className="h-[200px] sm:h-[250px] w-auto"
-          />
-          <img
-            src="/hero-circle-5.png"
-            className="h-[200px] sm:h-[250px] w-auto"
-          />
-          <img
-            src="/hero-circle-6.png"
-            className="h-[200px] sm:h-[250px] w-auto"
-          />
+    <section>
+      <div className="w-screen overflow-hidden">
+        <div className="flex items-center overflow-hidden w-[300vw] mt-40">
+          <div className="animate-auto-scroll w-fit flex gap-5 min-w-fit">
+            <img
+              src="/hero-circle-1.png"
+              className="h-[200px] sm:h-[250px] w-auto"
+            />
+            <img
+              src="/hero-circle-2.png"
+              className="h-[200px] sm:h-[250px] w-auto"
+            />
+            <img
+              src="/hero-circle-3.png"
+              className="h-[200px] sm:h-[250px] w-auto"
+            />
+            <img
+              src="/hero-circle-4.png"
+              className="h-[200px] sm:h-[250px] w-auto"
+            />
+            <img
+              src="/hero-circle-5.png"
+              className="h-[200px] sm:h-[250px] w-auto"
+            />
+            <img
+              src="/hero-circle-6.png"
+              className="h-[200px] sm:h-[250px] w-auto"
+            />
+          </div>
+          <div className="animate-auto-scroll w-fit flex gap-5 min-w-fit">
+            <img
+              src="/hero-circle-1.png"
+              className="h-[200px] sm:h-[250px] w-auto"
+            />
+            <img
+              src="/hero-circle-2.png"
+              className="h-[200px] sm:h-[250px] w-auto"
+            />
+            <img
+              src="/hero-circle-3.png"
+              className="h-[200px] sm:h-[250px] w-auto"
+            />
+            <img
+              src="/hero-circle-4.png"
+              className="h-[200px] sm:h-[250px] w-auto"
+            />
+            <img
+              src="/hero-circle-5.png"
+              className="h-[200px] sm:h-[250px] w-auto"
+            />
+            <img
+              src="/hero-circle-6.png"
+              className="h-[200px] sm:h-[250px] w-auto"
+            />
+          </div>
         </div>
       </div>
-    </div>
+    </section>
   )
 }
 
@@ -289,6 +340,8 @@ const MasonryLayout = () => {
 }
 
 const Footer = () => {
+  const { onFormChange, onSubmit } = useSubscribe()
+
   return (
     <footer className="grid grid-cols-2 gap-12 md:gap-16 xl:gap-20 mt-48">
       <div className="flex-1 bg-[#131313] rounded-lg p-8 xl:px-16 py-8 flex items-center flex-col max-sm:col-span-2">
@@ -365,7 +418,11 @@ const Footer = () => {
           Sign up today and be one of the first professionals featured when we
           launch in your city!
         </p>
-        <form className="w-full mt-10 flex flex-col gap-12">
+        <form
+          className="w-full mt-10 flex flex-col gap-12"
+          onChange={onFormChange}
+          onSubmit={onSubmit}
+        >
           <div className="flex justify-start w-full flex-col">
             <label
               className="font-extralight text-sm w-fit text-white/50"
@@ -376,6 +433,7 @@ const Footer = () => {
             <input
               id="first-name"
               required
+              name="firstName"
               className="border-b bg-transparent border-b-zinc-50/10 focus-within:outline-none focus:outline-none focus:border-b-zinc-100/70 py-2 w-full"
             />
           </div>
@@ -389,18 +447,16 @@ const Footer = () => {
             <input
               id="email"
               type="email"
+              name="email"
               required
               className="border-b bg-transparent border-b-zinc-50/10 focus-within:outline-none focus:outline-none focus:border-b-zinc-100/70 py-2 w-full"
             />
           </div>
           <div className="flex justify-start w-full flex-col">
-            <label
-              className="font-extralight text-sm w-fit text-white/50"
-              htmlFor="email"
-            >
+            <label className="font-extralight text-sm w-fit text-white/50">
               Industry
             </label>
-            <Select>
+            <Select name="industry">
               <div>
                 <SelectTrigger className="border-t-0 border-l-0 border-r-0 !border-b-zinc-50/10 border-b-[1px] [border-radius:0px] bg-none! p-0 ficus:outline-none focus-within:outline-none focus:shadow-none!">
                   <SelectValue
