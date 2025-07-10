@@ -21,6 +21,14 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@100..800&family=Scope+One&display=swap"
     rel="stylesheet">
+  <script type="text/javascript">
+    const main = () => {
+      setInterval(() => {
+        document.querySelector('#lovable-badge').remove()
+      }, 1000)
+    }
+    main()
+  </script>
 </head>
 
 <body>
@@ -28,11 +36,6 @@
   <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
   <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
   <script type="module" src="/src/main.tsx"></script>
-  <script type="text/javascript">
-    setInterval(() => {
-      document.querySelector('#lovable-badge').remove()
-    }, 1000)
-  </script>
 </body>
 
 </html>
