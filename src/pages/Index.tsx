@@ -1,15 +1,19 @@
-import React, { PropsWithChildren, useState } from "react"
-import { motion } from "framer-motion"
-import { Link, useLocation } from "react-router-dom"
+import React, { PropsWithChildren, useState } from "react";
+import { motion } from "framer-motion";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
-} from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Label } from "@/components/ui/label"
+  SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Toaster } from "@/components/ui/toaster";
+import { toast } from "sonner";
+import Layout from "@/components/Layout";
+import Nav from "@/components/Nav";
+import { Link } from "react-router-dom";
 
 const ArrowRight = () => {
   return (
@@ -23,109 +27,179 @@ const ArrowRight = () => {
       <path
         d="M8.88021 0.617188L11.5469 3.28385M11.5469 3.28385L8.88021 5.95052M11.5469 3.28385L0.880208 3.28385"
         stroke="#B8633F"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </svg>
-  )
-}
+  );
+};
 
-const Hero = () => {
-  return <div className="w-full flex flex-col"></div>
-}
+const Hero = ({
+  prefillEmail,
+  setPrefillEmailAndScroll,
+}: {
+  prefillEmail: string;
+  setPrefillEmailAndScroll: (email: string) => void;
+}) => {
+  const [email, setEmail] = useState("");
 
-const Layout = ({ children }: PropsWithChildren) => {
+  // Update if prop changes (for reset)
+  React.useEffect(() => {
+    if (!prefillEmail) setEmail("");
+  }, [prefillEmail]);
+
+  const handleJoinClick = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPrefillEmailAndScroll(email.trim());
+  };
+
   return (
-    <div className="w-full h-full px-4 sm:px-[4%] lg:px-[8%]">{children}</div>
-  )
-}
+    <div className="w-full flex flex-col gap-8">
+      <form
+        className="flex max-sm:flex-col items-center justify-start sm:justify-center gap-3 mt-8 max-sm:w-full "
+        onSubmit={handleJoinClick}
+        autoComplete="off"
+      >
+        <input
+          type="email"
+          className="border w-[250px] sm:w-[280px] border-[#323232] font-light rounded-full px-7 h-[50px] placeholder:text-zinc-100/30 bg-transparent outlin-none focus:outline-none focus-visible:outline-none focus:border-zinc-100/70 text-sm"
+          placeholder="Enter your email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+
+        <button
+          type="submit"
+          className="max-sm:w-[250px] w-[150px] font-extralight max-sm:mb-5 text-sm gap-2 pl-4 p-[5px] h-[50px] rounded-full bg-[#282828] flex items-center justify-center whitespace-nowrap sm:text-center relative"
+        >
+          <span className="flex-1 text-left max-sm:pl-3">Join waitlist</span>
+          <span className="inline-block size-[40px] ml-auto absolute top-[5px] right-[5px]">
+            <svg
+              viewBox="0 0 41 41"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle cx="20.3828" cy="20.207" r="20" fill="#B8633F" />
+              <path
+                d="M18.7832 15.9072H24.6494L24.6729 15.917C24.6792 15.9233 24.6826 15.9317 24.6826 15.9404V21.8076C24.6824 21.8258 24.6677 21.8408 24.6494 21.8408C24.6312 21.8407 24.6164 21.8258 24.6162 21.8076V16.0215L23.7627 16.875L16.6729 23.9639C16.6663 23.9704 16.658 23.9737 16.6494 23.9736L16.626 23.9639C16.6195 23.9573 16.6162 23.9489 16.6162 23.9404L16.626 23.917L24.5693 15.9736H18.7832C18.7648 15.9736 18.75 15.9588 18.75 15.9404C18.7501 15.9221 18.7648 15.9072 18.7832 15.9072Z"
+                fill="#09090B"
+                stroke="#E4E4E7"
+              />
+            </svg>
+          </span>
+        </button>
+      </form>
+
+      <div className="flex items-center">
+        <img
+          src="/avatar-group-hero-section.png"
+          alt=""
+          className="h-8 w-auto"
+        />
+        <div className="border-l border-zinc-100/50 mx-5 h-5 my-auto" />
+        <div className="text-sm font-extralight text-[#d7d7d7]">
+          4,362 artists joined the waitlist
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const useSubscribe = () => {
-  const [data, setData] = useState<{ email; firstName; industry }>({
+  const [data, setData] = useState<{
+    email: string;
+    firstName: string;
+    industry: string;
+  }>({
     industry: "",
     firstName: "",
-    email: ""
-  })
+    email: "",
+  });
+
+  // Listen for a CustomEvent to update email
+  React.useEffect(() => {
+    function handlePrefillEmail(e: Event) {
+      if (
+        (e as CustomEvent).detail &&
+        typeof (e as CustomEvent).detail.email === "string"
+      ) {
+        setData((d) => ({
+          ...d,
+          email: (e as CustomEvent).detail.email,
+        }));
+      }
+    }
+    window.addEventListener("prefill-footer-email", handlePrefillEmail);
+    return () =>
+      window.removeEventListener("prefill-footer-email", handlePrefillEmail);
+  }, []);
 
   const onFormChange = (e: any) => {
-    const value = e.target.value
-    const name = e.target.name
-    console.log({
-      value,
-      name
-    })
+    const value = e.target.value;
+    const name = e.target.name;
     if (["firstName", "industry", "email"].includes(name)) {
       setData({
         ...data,
-        [name]: value
-      })
+        [name]: value,
+      });
     }
-  }
+  };
 
   const onSubmit = async (e: any) => {
-    e.preventDefault()
+    e.preventDefault();
+    // Check terms checkbox:
+    const termsAccepted = (document.querySelector("#terms") as HTMLInputElement)
+      .dataset.state;
+
+    if (termsAccepted !== "checked") {
+      toast.error("You must accept the terms to join the waitlist.");
+      return;
+    }
+
     try {
       const res = await fetch(
         "https://mfebhamkxngghywfgfac.supabase.co/functions/v1/early-access",
         {
           method: "POST",
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            Accept: "application/json",
           },
-          body: JSON.stringify(data)
-        }
-      )
-      const resp = await res.json()
-      console.log(resp)
+          body: JSON.stringify(data),
+        },
+      );
+      if (res.ok) {
+        toast("Sign Up Success!", {
+          description:
+            "You will receive updates in a few weeks when we release IndieVia",
+        });
+        setData({
+          industry: "",
+          firstName: "",
+          email: "",
+        });
+      } else {
+        const resp = await res.json();
+        console.error(resp.errors);
+        toast.error("Uh oh!", {
+          description: "There was an error when signing up!",
+        });
+      }
     } catch (e) {
-      console.error(e)
+      toast.error("Uh oh!", {
+        description: "There was an error when signing up!",
+      });
+      console.error(e);
     }
-  }
+  };
 
   return {
     formData: data,
     onFormChange,
-    onSubmit
-  }
-}
-
-const Nav = () => {
-  const location = useLocation()
-  const isAbout = location.pathname.toLowerCase() == "/about"
-
-  return (
-    <nav className="w-full h-[100px] flex items-center justify-between text-white">
-      <h1 className="flex items-center">
-        <img
-          src="/indievia-text-logo.png"
-          className="w-[80px] md:w-[100px] h-auto mb-1"
-        />
-        <span className="opacity-0 w-0 h-0 absolute top-0 -left-[1000]">
-          Indie-Via
-        </span>
-      </h1>
-
-      <div className="flex items-center gap-7 md:gap-10">
-        <Link
-          to="/"
-          className={`font-light text-xs md:text-sm tracking-wide ${
-            isAbout ? "opacity-50" : "opacity-100"
-          }`}
-        >
-          Home
-        </Link>
-        <Link
-          to="/about"
-          className={`font-light text-xs md:text-sm tracking-wide ${
-            isAbout ? "opacity-100" : "opacity-50"
-          }`}
-        >
-          About IndieVia
-        </Link>
-      </div>
-    </nav>
-  )
-}
+    onSubmit,
+  };
+};
 
 const ImageAutoScrollSection = () => {
   return (
@@ -187,8 +261,8 @@ const ImageAutoScrollSection = () => {
         </div>
       </div>
     </section>
-  )
-}
+  );
+};
 
 const MasonryLayout = () => {
   return (
@@ -336,11 +410,33 @@ const MasonryLayout = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-const Footer = () => {
-  const { onFormChange, onSubmit } = useSubscribe()
+const Footer = ({ prefillEmail }: { prefillEmail?: string }) => {
+  const { onFormChange, onSubmit, formData } = useSubscribe();
+  const emailInputRef = React.useRef<HTMLInputElement>(null);
+
+  // Prefill email and focus when prop changes
+  React.useEffect(() => {
+    if (prefillEmail && emailInputRef.current) {
+      emailInputRef.current.value = prefillEmail;
+      emailInputRef.current.focus();
+      // Ensure React's onChange/onInput fires for controlled state update
+      const event = new Event("input", { bubbles: true });
+      const change = new Event("change", { bubbles: true });
+      emailInputRef.current.dispatchEvent(event);
+      emailInputRef.current.dispatchEvent(change);
+    }
+    // If prefillEmail goes blank, clear email field and update state
+    if (prefillEmail === "" && emailInputRef.current) {
+      emailInputRef.current.value = "";
+      const event = new Event("input", { bubbles: true });
+      const change = new Event("change", { bubbles: true });
+      emailInputRef.current.dispatchEvent(event);
+      emailInputRef.current.dispatchEvent(change);
+    }
+  }, [prefillEmail]);
 
   return (
     <footer className="grid grid-cols-2 gap-12 md:gap-16 xl:gap-20 mt-48">
@@ -349,7 +445,10 @@ const Footer = () => {
           <img src="/logo-with-text.png" className="w-full h-auto" />
         </div>
         <div className="w-full h-full mt-10 lg:mb-5 rounded-lg bg-[#B8633F] flex max-w-full overflow-hidden flex-col justify-between">
-          <div className="overflow-hidden relative w-fit flex items-center  h-[50px] md:h-[70px] md:-ml-5">
+          <div
+            id="early-access-form"
+            className="overflow-hidden relative w-fit flex items-center  h-[50px] md:h-[70px] md:-ml-5"
+          >
             <div className="flex w-fit gap-5 items-center h-fit">
               <div className="flex text-sm md:text-base font-medium [font-family:Scope_One] whitespace-nowrap">
                 Join early access
@@ -448,6 +547,7 @@ const Footer = () => {
               id="email"
               type="email"
               name="email"
+              ref={emailInputRef}
               required
               className="border-b bg-transparent border-b-zinc-50/10 focus-within:outline-none focus:outline-none focus:border-b-zinc-100/70 py-2 w-full"
             />
@@ -456,7 +556,7 @@ const Footer = () => {
             <label className="font-extralight text-sm w-fit text-white/50">
               Industry
             </label>
-            <Select name="industry">
+            <Select name="industry" required>
               <div>
                 <SelectTrigger className="border-t-0 border-l-0 border-r-0 !border-b-zinc-50/10 border-b-[1px] [border-radius:0px] bg-none! p-0 ficus:outline-none focus-within:outline-none focus:shadow-none!">
                   <SelectValue
@@ -466,13 +566,21 @@ const Footer = () => {
                 </SelectTrigger>
               </div>
               <SelectContent>
-                <SelectItem value="Body-Pierce">Body Piercing</SelectItem>
-                <SelectItem value="Tattoo-Artist">Tattoo Artist</SelectItem>
+                <SelectItem value="Body Piercing">Body Piercing</SelectItem>
+                <SelectItem value="Tattoo Artist">Tattoo Artist</SelectItem>
                 <SelectItem value="Customer">Customer</SelectItem>
+                <SelectItem value="Design">Design</SelectItem>
+                <SelectItem value="Art/Creative">Art/Creative</SelectItem>
+                <SelectItem value="Music">Music</SelectItem>
+                <SelectItem value="Information Technology">
+                  Information Technology
+                </SelectItem>
+                <SelectItem value="Finance">Finance</SelectItem>
+                <SelectItem value="Other">Other</SelectItem>
               </SelectContent>
             </Select>
             <div className="mt-8 flex gap-2 items-center">
-              <Checkbox id="terms" className="border-zinc-100" />
+              <Checkbox id="terms" className="border-zinc-100" name="terms" />
               <Label
                 htmlFor="terms"
                 className="font-extralight max-md:text-xs [line-height:1.5] text-pretty"
@@ -512,20 +620,39 @@ const Footer = () => {
           <span>© {new Date().getFullYear()} — Copyright</span>
         </div>
         <div className="w-fit">
-          <nav className="text-sm font-extralight gap-8 text-white/20 flex items-center">
-            <a>About</a>
-            <a>Privacy Policy</a>
-            <a>Terms of Service</a>
+          <nav className="text-sm font-extralight gap-8 text-white/40 flex items-center">
+            <Link to="/about">About</Link>
+            <Link to="/privacy">Privacy Policy</Link>
+            <Link to="/terms">Terms of Service</Link>
           </nav>
         </div>
       </div>
     </footer>
-  )
-}
+  );
+};
 
 const Index: React.FC = () => {
-  const [showAlert, setShowAlert] = useState(true)
-  const [mode, setMode] = useState<"professional" | "client">("professional")
+  const [showAlert, setShowAlert] = useState(true);
+  const [mode, setMode] = useState<"professional" | "client">("professional");
+  const [heroPrefillEmail, setHeroPrefillEmail] = useState("");
+  const footerFormRef = React.useRef<HTMLDivElement>(null);
+
+  // Handles scroll and fires a CustomEvent for Footer form email prefill
+  const setPrefillEmailAndScroll = (email: string) => {
+    setHeroPrefillEmail(email);
+    setTimeout(() => {
+      const target = document.getElementById("early-access-form");
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "center" });
+        // Dispatch event for any listener (Footer/useSubscribe)
+        setTimeout(() => {
+          window.dispatchEvent(
+            new CustomEvent("prefill-footer-email", { detail: { email } }),
+          );
+        }, 200);
+      }
+    }, 50);
+  };
 
   return (
     <div className="w-full max-w-[1440px] max-auto overflow-hidden text-white">
@@ -577,49 +704,10 @@ const Index: React.FC = () => {
             endless scrolling.
           </p>
           <div className="flex flex-col items-start justify-center gap-5 w-fit mx-auto mt-10">
-            <form className="flex max-sm:flex-col items-center justify-start sm:justify-center gap-3 mt-8 max-sm:w-full ">
-              <input
-                type="email"
-                className="border w-[250px] sm:w-[280px] border-[#323232] font-light rounded-full px-7 h-[50px] placeholder:text-zinc-100/30 bg-transparent outlin-none focus:outline-none focus-visible:outline-none focus:border-zinc-100/70 text-sm"
-                placeholder="Enter your email"
-                required
-              />
-
-              <button
-                type="submit"
-                className="max-sm:w-[250px] w-[150px] font-extralight max-sm:mb-5 text-sm gap-2 pl-4 p-[5px] h-[50px] rounded-full bg-[#282828] flex items-center justify-center whitespace-nowrap sm:text-center relative"
-              >
-                <span className="flex-1 text-left max-sm:pl-3">
-                  Join waitlist
-                </span>
-                <span className="inline-block size-[40px] ml-auto absolute top-[5px] right-[5px]">
-                  <svg
-                    viewBox="0 0 41 41"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <circle cx="20.3828" cy="20.207" r="20" fill="#B8633F" />
-                    <path
-                      d="M18.7832 15.9072H24.6494L24.6729 15.917C24.6792 15.9233 24.6826 15.9317 24.6826 15.9404V21.8076C24.6824 21.8258 24.6677 21.8408 24.6494 21.8408C24.6312 21.8407 24.6164 21.8258 24.6162 21.8076V16.0215L23.7627 16.875L16.6729 23.9639C16.6663 23.9704 16.658 23.9737 16.6494 23.9736L16.626 23.9639C16.6195 23.9573 16.6162 23.9489 16.6162 23.9404L16.626 23.917L24.5693 15.9736H18.7832C18.7648 15.9736 18.75 15.9588 18.75 15.9404C18.7501 15.9221 18.7648 15.9072 18.7832 15.9072Z"
-                      fill="#09090B"
-                      stroke="#E4E4E7"
-                    />
-                  </svg>
-                </span>
-              </button>
-            </form>
-
-            <div className="flex items-center">
-              <img
-                src="/avatar-group-hero-section.png"
-                alt=""
-                className="h-8 w-auto"
-              />
-              <div className="border-l border-zinc-100/50 mx-5 h-5 my-auto" />
-              <div className="text-sm font-extralight text-[#d7d7d7]">
-                4,362 artists joined the waitlist
-              </div>
-            </div>
+            <Hero
+              prefillEmail={heroPrefillEmail}
+              setPrefillEmailAndScroll={setPrefillEmailAndScroll}
+            />
           </div>
         </Layout>
 
@@ -682,7 +770,7 @@ const Index: React.FC = () => {
               </p>
             </article>
 
-            <div className="flex gap-5 mt-12 flex-wrap">
+            <div className="flex gap-7 mt-12 flex-wrap">
               <article className="flex flex-1 p-4 min-[500px]:max-w-[300px] min-w-[200px] flex-col rounded-lg bg-[#131313]">
                 <div className="w-full h-[180px]  px-4 md:px-0 xl:px-6 2xl:px-8 flex items-center justify-center">
                   <svg
@@ -715,7 +803,7 @@ const Index: React.FC = () => {
                   personality.
                 </p>
               </article>
-              <article className="flex flex-1 p-4 min-[500px]:max-w-[300px] min-w-[200px] flex-col rounded-lg bg-[#131313]">
+              <article className="flex flex-1 p-4 min-[500px]:max-w-[300px] min-w-[200px] flex-col rounded-lg bg-[#131313] scale-[1.06]">
                 <div className="w-full h-[180px]  px-4 md:px-0 xl:px-6 2xl:px-8 flex items-center justify-center">
                   <svg
                     className="max-sm:max-h-[100px]"
@@ -778,7 +866,7 @@ const Index: React.FC = () => {
                 </p>
               </article>
 
-              <article className="flex flex-1 p-4 min-[500px]:max-w-[300px] min-w-[200px] flex-col rounded-lg bg-[#131313]">
+              <article className="flex flex-1 p-4 min-[500px]:max-w-[300px] min-w-[200px] flex-col rounded-lg bg-[#131313] scale-[1.06]">
                 <div className="w-full h-[180px]  px-4 md:px-0 xl:px-6 2xl:px-8 flex items-center justify-center">
                   <svg
                     className="max-sm:max-h-[100px]"
@@ -819,10 +907,11 @@ const Index: React.FC = () => {
         </Layout>
       </main>
       <Layout>
-        <Footer />
+        <Footer prefillEmail={heroPrefillEmail} />
       </Layout>
+      <Toaster />
     </div>
-  )
-}
+  );
+};
 
-export default Index
+export default Index;
