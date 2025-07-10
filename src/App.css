@@ -40,3 +40,10 @@
 .read-the-docs {
   color: #888;
 }
+
+html,
+body {
+  background: #0b0b0b !important;
+  color: #ffffff;
+  font-family: Manrope, sans-serif;
+}
