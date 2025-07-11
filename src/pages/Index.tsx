@@ -1,5 +1,5 @@
 import React, { PropsWithChildren, useState } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   Select,
   SelectContent,
@@ -55,7 +55,8 @@ const Hero = ({
 
   return (
     <div className="w-full flex flex-col gap-8">
-      <form
+      <motion.form
+        layout="position"
         className="flex max-sm:flex-col items-center justify-start sm:justify-center gap-3 mt-8 max-sm:w-full "
         onSubmit={handleJoinClick}
         autoComplete="off"
@@ -89,9 +90,9 @@ const Hero = ({
             </svg>
           </span>
         </button>
-      </form>
+      </motion.form>
 
-      <div className="flex items-center">
+      <motion.div layout="position" className="flex items-center">
         <img
           src="/avatar-group-hero-section.png"
           alt=""
@@ -99,14 +100,14 @@ const Hero = ({
         />
         <div className="border-l border-zinc-100/50 mx-5 h-5 my-auto" />
         <div className="text-sm font-extralight text-[#d7d7d7]">
-          4,362 artists joined the waitlist
+          4,362 artists and clients joined the waitlist
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };
 
-const useSubscribe = () => {
+const useSubscribe = ({ mode }: { mode: "professional" | "client" }) => {
   const [data, setData] = useState<{
     email: string;
     firstName: string;
@@ -116,6 +117,7 @@ const useSubscribe = () => {
     firstName: "",
     email: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   // Listen for a CustomEvent to update email
   React.useEffect(() => {
@@ -157,6 +159,11 @@ const useSubscribe = () => {
       return;
     }
 
+    const body = data;
+    if (mode === "client") {
+      body.industry = "client";
+    }
+    setIsLoading(true);
     try {
       const res = await fetch(
         "https://mfebhamkxngghywfgfac.supabase.co/functions/v1/early-access",
@@ -166,7 +173,7 @@ const useSubscribe = () => {
             "Content-Type": "application/json",
             Accept: "application/json",
           },
-          body: JSON.stringify(data),
+          body: JSON.stringify(body),
         },
       );
       if (res.ok) {
@@ -192,12 +199,15 @@ const useSubscribe = () => {
       });
       console.error(e);
     }
+
+    setIsLoading(false);
   };
 
   return {
     formData: data,
     onFormChange,
     onSubmit,
+    isLoading,
   };
 };
 
@@ -285,7 +295,7 @@ const MasonryLayout = () => {
               <div className="h-fit rounded-lg overflow-hidden w-full">
                 <img
                   src="/picture-of-woman.jpg"
-                  className="w-full h-auto scale-[1.06] [transform-origin:center_center]"
+                  className="w-full h-auto lg:scale-[1.06] [transform-origin:center_center]"
                 />
               </div>
               <div className="text-black text-sm mt-2">
@@ -413,8 +423,16 @@ const MasonryLayout = () => {
   );
 };
 
-const Footer = ({ prefillEmail }: { prefillEmail?: string }) => {
-  const { onFormChange, onSubmit, formData } = useSubscribe();
+const Footer = ({
+  prefillEmail,
+  mode,
+}: {
+  prefillEmail?: string;
+  mode: "professional" | "client";
+}) => {
+  const { onFormChange, onSubmit, isLoading, formData } = useSubscribe({
+    mode,
+  });
   const emailInputRef = React.useRef<HTMLInputElement>(null);
 
   // Prefill email and focus when prop changes
@@ -511,11 +529,21 @@ const Footer = ({ prefillEmail }: { prefillEmail?: string }) => {
       </div>
       <div className="flex-1 flex flex-col max-sm:col-span-2 max-md:mt-12">
         <h2 className="text-2xl font-extralight tracking-wider">
-          Let clients find you, without the hassle
+          {mode === "professional" &&
+            "Let clients find you, without the hassle"}
+          {mode === "client" && "Don’t Miss the Launch!"}
         </h2>
         <p className="text-sm sm:text-base text-[#8e8e8e] mt-3 font-light">
-          Sign up today and be one of the first professionals featured when we
-          launch in your city!
+          {mode === "professional" &&
+            `Sign up today and be one of the first professionals featured when we
+            launch in your city!`}
+          {mode === "client" && (
+            <>
+              We’ll keep you in the loop. No spam—ever!
+              <br /> Discover the best tattoo arists in your city with
+              IndieVia!`
+            </>
+          )}
         </p>
         <form
           className="w-full mt-10 flex flex-col gap-12"
@@ -530,6 +558,7 @@ const Footer = ({ prefillEmail }: { prefillEmail?: string }) => {
               First Name
             </label>
             <input
+              value={formData.firstName}
               id="first-name"
               required
               name="firstName"
@@ -544,6 +573,7 @@ const Footer = ({ prefillEmail }: { prefillEmail?: string }) => {
               Email
             </label>
             <input
+              value={formData.email}
               id="email"
               type="email"
               name="email"
@@ -553,32 +583,28 @@ const Footer = ({ prefillEmail }: { prefillEmail?: string }) => {
             />
           </div>
           <div className="flex justify-start w-full flex-col">
-            <label className="font-extralight text-sm w-fit text-white/50">
+            <label
+              className="font-extralight text-sm w-fit text-white/50"
+              style={{ display: mode === "client" ? "none" : "block" }}
+            >
               Industry
             </label>
-            <Select name="industry" required>
-              <div>
-                <SelectTrigger className="border-t-0 border-l-0 border-r-0 !border-b-zinc-50/10 border-b-[1px] [border-radius:0px] bg-none! p-0 ficus:outline-none focus-within:outline-none focus:shadow-none!">
-                  <SelectValue
-                    placeholder="Select your industry"
-                    className="ficus:outline-none focus-within:outline-none focus:border-none focus-within:border-none focus-visible:outline-none placeholder:text-white/50!"
-                  />
-                </SelectTrigger>
-              </div>
-              <SelectContent>
-                <SelectItem value="Body Piercing">Body Piercing</SelectItem>
-                <SelectItem value="Tattoo Artist">Tattoo Artist</SelectItem>
-                <SelectItem value="Customer">Customer</SelectItem>
-                <SelectItem value="Design">Design</SelectItem>
-                <SelectItem value="Art/Creative">Art/Creative</SelectItem>
-                <SelectItem value="Music">Music</SelectItem>
-                <SelectItem value="Information Technology">
-                  Information Technology
-                </SelectItem>
-                <SelectItem value="Finance">Finance</SelectItem>
-                <SelectItem value="Other">Other</SelectItem>
-              </SelectContent>
-            </Select>
+            {mode === "professional" && (
+              <Select name="industry" required>
+                <div>
+                  <SelectTrigger className="border-t-0 border-l-0 border-r-0 !border-b-zinc-50/10 border-b-[1px] [border-radius:0px] bg-none! p-0 ficus:outline-none focus-within:outline-none focus:shadow-none!">
+                    <SelectValue
+                      placeholder="Select your industry"
+                      className="ficus:outline-none focus-within:outline-none focus:border-none focus-within:border-none focus-visible:outline-none placeholder:text-white/50!"
+                    />
+                  </SelectTrigger>
+                </div>
+                <SelectContent>
+                  <SelectItem value="Body Piercer">Body Piercer</SelectItem>
+                  <SelectItem value="Tattoo Artist">Tattoo Artist</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
             <div className="mt-8 flex gap-2 items-center">
               <Checkbox id="terms" className="border-zinc-100" name="terms" />
               <Label
@@ -590,22 +616,27 @@ const Footer = ({ prefillEmail }: { prefillEmail?: string }) => {
             </div>
             <button
               type="submit"
+              disabled={isLoading}
               className="font-extralight text-sm gap-2 pl-4 p-[5px] h-[50px] rounded-full bg-[#282828] flex items-center justify-center whitespace-nowrap ml-auto mt-10"
             >
               Join waitlist
               <span className="inline-block size-[40px]">
-                <svg
-                  viewBox="0 0 41 41"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <circle cx="20.3828" cy="20.207" r="20" fill="#B8633F" />
-                  <path
-                    d="M18.7832 15.9072H24.6494L24.6729 15.917C24.6792 15.9233 24.6826 15.9317 24.6826 15.9404V21.8076C24.6824 21.8258 24.6677 21.8408 24.6494 21.8408C24.6312 21.8407 24.6164 21.8258 24.6162 21.8076V16.0215L23.7627 16.875L16.6729 23.9639C16.6663 23.9704 16.658 23.9737 16.6494 23.9736L16.626 23.9639C16.6195 23.9573 16.6162 23.9489 16.6162 23.9404L16.626 23.917L24.5693 15.9736H18.7832C18.7648 15.9736 18.75 15.9588 18.75 15.9404C18.7501 15.9221 18.7648 15.9072 18.7832 15.9072Z"
-                    fill="#09090B"
-                    stroke="#E4E4E7"
-                  />
-                </svg>
+                {isLoading ? (
+                  <span className="w-[25px] h-[25px] border-2 mt-[7.5px] border-[#B8633F] border-t-transparent animate-spin rounded-full block mx-auto" />
+                ) : (
+                  <svg
+                    viewBox="0 0 41 41"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <circle cx="20.3828" cy="20.207" r="20" fill="#B8633F" />
+                    <path
+                      d="M18.7832 15.9072H24.6494L24.6729 15.917C24.6792 15.9233 24.6826 15.9317 24.6826 15.9404V21.8076C24.6824 21.8258 24.6677 21.8408 24.6494 21.8408C24.6312 21.8407 24.6164 21.8258 24.6162 21.8076V16.0215L23.7627 16.875L16.6729 23.9639C16.6663 23.9704 16.658 23.9737 16.6494 23.9736L16.626 23.9639C16.6195 23.9573 16.6162 23.9489 16.6162 23.9404L16.626 23.917L24.5693 15.9736H18.7832C18.7648 15.9736 18.75 15.9588 18.75 15.9404C18.7501 15.9221 18.7648 15.9072 18.7832 15.9072Z"
+                      fill="#09090B"
+                      stroke="#E4E4E7"
+                    />
+                  </svg>
+                )}
               </span>
             </button>
           </div>
@@ -632,10 +663,8 @@ const Footer = ({ prefillEmail }: { prefillEmail?: string }) => {
 };
 
 const Index: React.FC = () => {
-  const [showAlert, setShowAlert] = useState(true);
   const [mode, setMode] = useState<"professional" | "client">("professional");
   const [heroPrefillEmail, setHeroPrefillEmail] = useState("");
-  const footerFormRef = React.useRef<HTMLDivElement>(null);
 
   // Handles scroll and fires a CustomEvent for Footer form email prefill
   const setPrefillEmailAndScroll = (email: string) => {
@@ -692,17 +721,69 @@ const Index: React.FC = () => {
             </div>
           </div>
           <h2
-            className="text-4xl sm:text-5xl text-white text-center font-extralight mt-10"
+            className="text-4xl sm:text-5xl text-white text-center font-extralight mt-10 w-full flex items-center justify-center"
             style={{ fontFamily: "Scope One, mono" }}
           >
-            Less research.
-            <br /> More results.
+            <AnimatePresence initial={false} mode="popLayout">
+              {mode === "professional" && (
+                <motion.span
+                  exit={{ opacity: 0, filter: "blur(5px)" }}
+                  initial={{ opacity: 0, filter: "blur(5px)" }}
+                  animate={{ opacity: 1, filter: "blur(0px)" }}
+                  transition={{ duration: 1 }}
+                >
+                  Less research.
+                  <br /> More results
+                </motion.span>
+              )}
+            </AnimatePresence>
+            <AnimatePresence initial={false} mode="popLayout">
+              {mode === "client" && (
+                <motion.span
+                  exit={{ opacity: 0, filter: "blur(5px)" }}
+                  initial={{ opacity: 0, filter: "blur(5px)" }}
+                  animate={{ opacity: 1, filter: "blur(0px)" }}
+                  transition={{ duration: 1 }}
+                >
+                  Discover Trusted Tattoo {"&"}
+                  <br /> Beauty Professionals Near You
+                </motion.span>
+              )}
+            </AnimatePresence>
           </h2>
-          <p className="max-sm:text-sm font-sm max-w-[600px] font-extralight text-balance text-white text-center mt-10 mx-auto">
-            <b>IndieVia</b> connects clients to local professionals within the
-            beauty and tattooing industry without any commitments and the
-            endless scrolling.
-          </p>
+          <motion.p
+            layout="position"
+            transition={{ duration: 1 }}
+            className="max-sm:text-sm font-sm max-w-[600px] font-extralight text-balance text-white text-center mt-10 mx-auto"
+          >
+            <AnimatePresence initial={false} mode="popLayout">
+              {mode === "professional" && (
+                <motion.span
+                  exit={{ opacity: 0, filter: "blur(5px)" }}
+                  initial={{ opacity: 0, filter: "blur(5px)" }}
+                  animate={{ opacity: 1, filter: "blur(0px)" }}
+                  transition={{ duration: 1 }}
+                >
+                  <b>IndieVia</b> connects clients to local professionals within
+                  the beauty and tattooing industry without any commitments and
+                  the endless scrolling.{" "}
+                </motion.span>
+              )}
+            </AnimatePresence>
+            <AnimatePresence initial={false} mode="popLayout">
+              {mode === "client" && (
+                <motion.span
+                  exit={{ opacity: 0, filter: "blur(5px)" }}
+                  initial={{ opacity: 0, filter: "blur(5px)" }}
+                  animate={{ opacity: 1, filter: "blur(0px)" }}
+                  transition={{ duration: 1 }}
+                >
+                  Real reviews. Independent artists. No booking hassles—just the
+                  best in your
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </motion.p>
           <div className="flex flex-col items-start justify-center gap-5 w-fit mx-auto mt-10">
             <Hero
               prefillEmail={heroPrefillEmail}
@@ -721,16 +802,19 @@ const Index: React.FC = () => {
                     Why join now
                   </h1>
                   <p className=" max-sm:text-sm font-extralight text-[#8e8e8e] max-w-[500px] mt-5">
-                    Becoming an early member of our platform means more than
+                    {mode === "professional" &&
+                      `Becoming an early member of our platform means more than
                     just getting listed — it’s a chance to grow with a community
                     that’s built around your needs as an independent
-                    professional.
+                    professional.`}
+                    {mode === "client" &&
+                      `Be among the first to shape this community. Early members get exclusive access and updates.`}
                   </p>
                   <p className="max-sm:text-sm  font-extralight text-[#8e8e8e] max-w-[500px] mt-3">
-                    {`We’re building this with input from real artists and pros. Your feedback will directly influence the tools and features we prioritize next.`}
+                    {`We’re building IndieVia with input from tattoo enthusiasts and professionals. Your feedback will directly influence the tools and features we prioritize next.`}
                   </p>
                   <p className="max-sm:text-sm font-extralight text-[#8e8e8e] max-w-[500px] mt-3">
-                    {`Be part of a fresh, growing space focused on reviews, trust, and visibility — not outdated directories or algorithm-driven platforms.`}
+                    {`Be part of a fresh, growing space focused on reviews, trust, quality — not outdated directories or algorithm-driven platforms.`}
                   </p>
                 </article>
               </div>
@@ -738,39 +822,51 @@ const Index: React.FC = () => {
                 <div className="flex items-center gap-4 justify-start w-fit">
                   <ArrowRight />
                   <p className="text-white text-lg font-light">
-                    Help shape the platform
+                    {mode === "professional" && `Help shape the platform`}
+                    {mode === "client" && `Find and review local artists`}
                   </p>
                 </div>
                 <div className="flex items-center gap-4 justify-start w-fit">
                   <ArrowRight />
                   <p className="text-white text-lg font-light">
-                    Get early visibility and exposure
+                    {mode === "professional" &&
+                      `Get early visibility and exposure`}
+                    {mode === "client" && `Read honest reviews`}
                   </p>
                 </div>
                 <div className="flex items-center justify-start gap-4 w-fit">
                   <ArrowRight />
                   <p className="text-white text-lg font-light">
-                    Stay ahead of the curve
+                    {mode === "professional" && `Stay ahead of the curve`}
+                    {mode === "client" && `Join a like-minded community`}
                   </p>
                 </div>
               </div>
             </div>
           </section>
           <section>
-            <article className="mt-32 md:mt-20">
-              <h1 className="text-2xl text-white font-light">
-                Your talent deserves more eyes
-              </h1>
-              <p className=" max-sm:text-sm font-extralight text-[#8e8e8e] max-w-[500px] mt-5">
-                Join <b className="text-white font-light">IndieVia</b>, the only
-                review-based platform for professionals within the beauty and
-                tattooing industry with no booking sign-up required. Think Yelp,
-                but for individual professionals. Create your profile and get
-                discovered faster!
-              </p>
-            </article>
+            <AnimatePresence initial={false}>
+              {mode === "professional" && (
+                <motion.article
+                  className="mt-32 md:mt-20"
+                  exit={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                >
+                  <h1 className="text-2xl text-white font-light">
+                    Your talent deserves more eyes
+                  </h1>
+                  <p className=" max-sm:text-sm font-extralight text-[#8e8e8e] max-w-[500px] mt-5">
+                    Join <b className="text-white font-light">IndieVia</b>, the
+                    only review-based platform for professionals within the
+                    beauty and tattooing industry with no booking sign-up
+                    required. Think Yelp, but for individual professionals.
+                    Create your profile and get discovered faster!
+                  </p>
+                </motion.article>
+              )}
+            </AnimatePresence>
 
-            <div className="flex gap-7 mt-12 flex-wrap">
+            <div className="flex gap-5 lg:gap-7 mt-12 flex-wrap">
               <article className="flex flex-1 p-4 min-[500px]:max-w-[300px] min-w-[200px] flex-col rounded-lg bg-[#131313]">
                 <div className="w-full h-[180px]  px-4 md:px-0 xl:px-6 2xl:px-8 flex items-center justify-center">
                   <svg
@@ -799,11 +895,15 @@ const Index: React.FC = () => {
                   Free profile creation
                 </h1>
                 <p className="font-extralight text-[#8e8e8e] text-xs sm:text-sm mt-2">
-                  Set up a professional profile that reflects your services, and
-                  personality.
+                  {mode === "professional" &&
+                    `Set up a professional profile that reflects your services, and
+                    personality.`}
+                  {mode === "client" &&
+                    `Set up a reviewer profile with a bio & profile-picture that reflects
+                    personality.`}
                 </p>
               </article>
-              <article className="flex flex-1 p-4 min-[500px]:max-w-[300px] min-w-[200px] flex-col rounded-lg bg-[#131313] scale-[1.06]">
+              <article className="flex flex-1 p-4 min-[500px]:max-w-[300px] min-w-[200px] flex-col rounded-lg bg-[#131313] lg:scale-[1.06]">
                 <div className="w-full h-[180px]  px-4 md:px-0 xl:px-6 2xl:px-8 flex items-center justify-center">
                   <svg
                     className="max-sm:max-h-[100px]"
@@ -822,12 +922,16 @@ const Index: React.FC = () => {
                   </svg>
                 </div>
                 <h1 className="text-sm sm:text-base font-light text-white ">
-                  Discovered by style/ speciality
+                  {mode === "professional" && "Discovered by style/ speciality"}
+                  {mode === "client" && "Discovered artists in your locale"}
                 </h1>
                 <p className="font-extralight text-[#8e8e8e] text-xs sm:text-sm mt-2">
-                  Be seen by people in your city actively looking for tattoo and
+                  {mode === "professional" &&
+                    `Be seen by people in your city actively looking for tattoo and
                   beauty professionals. No need to chase algorithms or pay for
-                  ads.
+                  ads.`}
+                  {mode === "client" &&
+                    "Discover top tattoo artists in your city or show your support by dropping a review."}
                 </p>
               </article>
               <article className="flex flex-1 p-4 min-[500px]:max-w-[300px] min-w-[200px] flex-col rounded-lg bg-[#131313]">
@@ -861,12 +965,15 @@ const Index: React.FC = () => {
                   Connect your socials
                 </h1>
                 <p className="font-extralight text-[#8e8e8e] text-xs sm:text-sm mt-2">
-                  Invite your past clients to leave honest, verified reviews.
-                  Real feedback that helps you stand out.
+                  {mode === "professional" &&
+                    `Invite your past clients to leave honest, verified reviews.
+                    Real feedback that helps you stand out.`}
+                  {mode === "client" &&
+                    `We enable you to share reviews straight to social media or use images from instagram in your reviews!`}
                 </p>
               </article>
 
-              <article className="flex flex-1 p-4 min-[500px]:max-w-[300px] min-w-[200px] flex-col rounded-lg bg-[#131313] scale-[1.06]">
+              <article className="flex flex-1 p-4 min-[500px]:max-w-[300px] min-w-[200px] flex-col rounded-lg bg-[#131313] lg:scale-[1.06]">
                 <div className="w-full h-[180px]  px-4 md:px-0 xl:px-6 2xl:px-8 flex items-center justify-center">
                   <svg
                     className="max-sm:max-h-[100px]"
@@ -894,11 +1001,16 @@ const Index: React.FC = () => {
                   </svg>
                 </div>
                 <h1 className="text-sm sm:text-base font-light text-white ">
-                  Free profile creation
+                  {mode === "professional" && "No bookings required"}
+                  {mode === "client" && "Make bookings directly"}
                 </h1>
                 <p className="font-extralight text-[#8e8e8e] text-xs sm:text-sm mt-2">
-                  Set up a professional profile that reflects your services, and
-                  personality.
+                  {mode === "professional" &&
+                    `We’re not a scheduling platform, which means you stay in
+                  control. Clients find you, explore your work, and reach out
+                  directly.`}
+                  {mode === "client" &&
+                    `Explore and book appointments directly with tattoo artists / body piercing specialists.`}
                 </p>
               </article>
             </div>
@@ -907,7 +1019,7 @@ const Index: React.FC = () => {
         </Layout>
       </main>
       <Layout>
-        <Footer prefillEmail={heroPrefillEmail} />
+        <Footer prefillEmail={heroPrefillEmail} mode={mode} />
       </Layout>
       <Toaster />
     </div>
