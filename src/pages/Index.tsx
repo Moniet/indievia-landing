@@ -652,9 +652,17 @@ const Footer = ({
         </div>
         <div className="w-fit">
           <nav className="text-sm font-extralight gap-8 text-white/40 flex items-center">
-            <Link to="/about">About</Link>
-            <Link to="/privacy">Privacy Policy</Link>
-            <Link to="/terms">Terms of Service</Link>
+            <nav className="text-xs sm:text-sm font-extralight gap-6 sm:gap-8  flex items-center">
+              <Link to="/about" className="text-white/20 hover:text-white/50">
+                About
+              </Link>
+              <Link to="/privacy" className="text-white/20 hover:text-white/50">
+                Privacy Policy
+              </Link>
+              <Link to="/terms" className="text-white/20 hover:text-white/50">
+                Terms of Service
+              </Link>
+            </nav>
           </nav>
         </div>
       </div>
