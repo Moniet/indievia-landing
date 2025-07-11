@@ -836,7 +836,7 @@ const Index: React.FC = () => {
                   transition={{ duration: 1 }}
                 >
                   Real reviews. Independent artists. No booking hassles—just the
-                  best in your
+                  best in your city!
                 </motion.span>
               )}
             </AnimatePresence>
