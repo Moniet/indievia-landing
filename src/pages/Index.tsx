@@ -1,4 +1,9 @@
-import React, { PropsWithChildren, useState } from "react";
+import React, {
+  PropsWithChildren,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Select,
@@ -37,9 +42,11 @@ const ArrowRight = () => {
 const Hero = ({
   prefillEmail,
   setPrefillEmailAndScroll,
+  subscriberCount,
 }: {
   prefillEmail: string;
   setPrefillEmailAndScroll: (email: string) => void;
+  subscriberCount: number | null;
 }) => {
   const [email, setEmail] = useState("");
 
@@ -99,15 +106,28 @@ const Hero = ({
           className="h-8 w-auto"
         />
         <div className="border-l border-zinc-100/50 mx-5 h-5 my-auto" />
-        <div className="text-sm font-extralight text-[#d7d7d7]">
-          4,362 artists and clients joined the waitlist
-        </div>
+        <motion.div className="text-sm font-extralight text-[#d7d7d7]" layout>
+          {typeof subscriberCount === "number" ? (
+            `${subscriberCount.toLocaleString()}`
+          ) : (
+            <div className="h-4 w-[5ch] bg-neutral-600 animate-pulse rounded inline-block align-middle" />
+          )}{" "}
+          <motion.span layout="position" transition={{ duration: 0.5 }}>
+            artists and clients joined the waitlist
+          </motion.span>
+        </motion.div>
       </motion.div>
     </div>
   );
 };
 
-const useSubscribe = ({ mode }: { mode: "professional" | "client" }) => {
+const useSubscribe = ({
+  mode,
+  onAfterSubscribe,
+}: {
+  mode: "professional" | "client";
+  onAfterSubscribe?: () => void;
+}) => {
   const [data, setData] = useState<{
     email: string;
     firstName: string;
@@ -186,6 +206,9 @@ const useSubscribe = ({ mode }: { mode: "professional" | "client" }) => {
           firstName: "",
           email: "",
         });
+        if (onAfterSubscribe) {
+          onAfterSubscribe();
+        }
       } else {
         const resp = await res.json();
         console.error(resp.errors);
@@ -426,12 +449,15 @@ const MasonryLayout = () => {
 const Footer = ({
   prefillEmail,
   mode,
+  onAfterSubscribe,
 }: {
   prefillEmail?: string;
   mode: "professional" | "client";
+  onAfterSubscribe?: () => void;
 }) => {
   const { onFormChange, onSubmit, isLoading, formData } = useSubscribe({
     mode,
+    onAfterSubscribe,
   });
   const emailInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -673,6 +699,28 @@ const Footer = ({
 const Index: React.FC = () => {
   const [mode, setMode] = useState<"professional" | "client">("professional");
   const [heroPrefillEmail, setHeroPrefillEmail] = useState("");
+  const [subscriberCount, setSubscriberCount] = useState<number | null>(null);
+
+  // Fetch the current subscriber count from the API
+  const fetchSubscriberCount = useCallback(async () => {
+    try {
+      const res = await fetch(
+        "https://mfebhamkxngghywfgfac.supabase.co/functions/v1/smart-api",
+      );
+      if (res.ok) {
+        const json = await res.json();
+        if (typeof json.count === "number") {
+          setSubscriberCount(json.count);
+        }
+      }
+    } catch (e) {
+      // optionally handle error
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchSubscriberCount();
+  }, [fetchSubscriberCount]);
 
   // Handles scroll and fires a CustomEvent for Footer form email prefill
   const setPrefillEmailAndScroll = (email: string) => {
@@ -796,6 +844,7 @@ const Index: React.FC = () => {
             <Hero
               prefillEmail={heroPrefillEmail}
               setPrefillEmailAndScroll={setPrefillEmailAndScroll}
+              subscriberCount={subscriberCount}
             />
           </div>
         </Layout>
@@ -1027,7 +1076,11 @@ const Index: React.FC = () => {
         </Layout>
       </main>
       <Layout>
-        <Footer prefillEmail={heroPrefillEmail} mode={mode} />
+        <Footer
+          prefillEmail={heroPrefillEmail}
+          mode={mode}
+          onAfterSubscribe={fetchSubscriberCount}
+        />
       </Layout>
       <Toaster />
     </div>
