@@ -1,6 +1,7 @@
 import React from "react";
 import Layout from "@/components/Layout";
 import Nav from "@/components/Nav";
+import { Link } from "react-router-dom";
 
 const Privacy = () => {
   return (
@@ -15,20 +16,29 @@ const Privacy = () => {
           </h2>
           <div className="font-thin tracking-wider mt-6 sm:mt-8 text-[#d7d7d7] text-xs sm:text-base max-w-full sm:max-w-[75%] lg-max-w-[60%] xl:max-w-[50%] space-y-6">
             <p>
-              Your privacy is important to us at IndieVia. This Privacy Policy explains how we collect, use, store, and safeguard your information when you access our services.
+              Your privacy is important to us at IndieVia. This Privacy Policy
+              explains how we collect, use, store, and safeguard your
+              information when you access our services.
             </p>
 
             <section>
-              <h3 className="font-semibold text-white mt-6 mb-1">1. Information We Collect</h3>
+              <h3 className="font-semibold text-white mt-6 mb-1">
+                1. Information We Collect
+              </h3>
               <ul className="list-disc list-inside ml-4">
-                <li>Personal identification information (Name, email address, etc.) when you sign up or use our services.</li>
+                <li>
+                  Personal identification information (Name, email address,
+                  etc.) when you sign up or use our services.
+                </li>
                 <li>Usage data (pages visited, features used, etc.).</li>
                 <li>Any other information you voluntarily provide.</li>
               </ul>
             </section>
 
             <section>
-              <h3 className="font-semibold text-white mt-6 mb-1">2. How We Use Information</h3>
+              <h3 className="font-semibold text-white mt-6 mb-1">
+                2. How We Use Information
+              </h3>
               <ul className="list-disc list-inside ml-4">
                 <li>To provide and improve our services.</li>
                 <li>To send communications or updates with your consent.</li>
@@ -37,45 +47,66 @@ const Privacy = () => {
             </section>
 
             <section>
-              <h3 className="font-semibold text-white mt-6 mb-1">3. Sharing Your Information</h3>
+              <h3 className="font-semibold text-white mt-6 mb-1">
+                3. Sharing Your Information
+              </h3>
               <p>
-                We do not sell your personal information. We may share information with service providers as required to deliver the IndieVia service, or if legally compelled.
+                We do not sell your personal information. We may share
+                information with service providers as required to deliver the
+                IndieVia service, or if legally compelled.
               </p>
             </section>
 
             <section>
-              <h3 className="font-semibold text-white mt-6 mb-1">4. Data Security</h3>
+              <h3 className="font-semibold text-white mt-6 mb-1">
+                4. Data Security
+              </h3>
               <p>
-                We implement best practices to secure your data, but please be aware no method of electronic transmission or storage is 100% secure.
+                We implement best practices to secure your data, but please be
+                aware no method of electronic transmission or storage is 100%
+                secure.
               </p>
             </section>
 
             <section>
-              <h3 className="font-semibold text-white mt-6 mb-1">5. Your Rights</h3>
+              <h3 className="font-semibold text-white mt-6 mb-1">
+                5. Your Rights
+              </h3>
               <ul className="list-disc list-inside ml-4">
-                <li>Access, update, or delete your personal data by contacting us.</li>
+                <li>
+                  Access, update, or delete your personal data by contacting us.
+                </li>
                 <li>Opt out of marketing communications at any time.</li>
               </ul>
             </section>
 
             <section>
-              <h3 className="font-semibold text-white mt-6 mb-1">6. Children’s Privacy</h3>
+              <h3 className="font-semibold text-white mt-6 mb-1">
+                6. Children’s Privacy
+              </h3>
               <p>
-                IndieVia does not knowingly collect or solicit personal information from anyone under the age of 13.
+                IndieVia does not knowingly collect or solicit personal
+                information from anyone under the age of 13.
               </p>
             </section>
 
             <section>
-              <h3 className="font-semibold text-white mt-6 mb-1">7. Changes to This Policy</h3>
+              <h3 className="font-semibold text-white mt-6 mb-1">
+                7. Changes to This Policy
+              </h3>
               <p>
-                We may update this Privacy Policy. Changes will be posted here and your continued use of the service constitutes agreement.
+                We may update this Privacy Policy. Changes will be posted here
+                and your continued use of the service constitutes agreement.
               </p>
             </section>
 
             <section>
-              <h3 className="font-semibold text-white mt-6 mb-1">8. Contact Us</h3>
+              <h3 className="font-semibold text-white mt-6 mb-1">
+                8. Contact Us
+              </h3>
               <p>
-                For questions about your privacy or this policy, email us at contact@indievia.com.
+                For questions about your privacy or this policy, email us at
+                contact@indievia.com.
               </p>
             </section>
 
@@ -109,10 +140,19 @@ const Privacy = () => {
               <span>© {new Date().getFullYear()} — Copyright</span>
             </div>
             <div className="w-fit">
-              <nav className="text-xs sm:text-sm font-extralight gap-6 sm:gap-8 text-white/20 flex items-center">
-                <a href="/about">About</a>
-                <a href="/privacy">Privacy Policy</a>
-                <a href="/terms">Terms of Service</a>
+              <nav className="text-xs sm:text-sm font-extralight gap-6 sm:gap-8  flex items-center">
+                <Link to="/about" className="text-white/20 hover:text-white/50">
+                  About
+                </Link>
+                <Link
+                  to="/privacy"
+                  className="text-white/20 hover:text-white/50"
+                >
+                  Privacy Policy
+                </Link>
+                <Link to="/terms" className="text-white/20 hover:text-white/50">
+                  Terms of Service
+                </Link>
               </nav>
             </div>
           </div>

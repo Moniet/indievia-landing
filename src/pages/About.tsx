@@ -1,5 +1,6 @@
-import Layout from "@/components/Layout";
-import Nav from "@/components/Nav";
+import Layout from "@/components/Layout"
+import Nav from "@/components/Nav"
+import { Link } from "react-router-dom"
 
 const About = () => {
   return (
@@ -46,17 +47,26 @@ const About = () => {
               <span>© {new Date().getFullYear()} — Copyright</span>
             </div>
             <div className="w-fit">
-              <nav className="text-xs sm:text-sm font-extralight gap-6 sm:gap-8 text-white/20 flex items-center">
-                <a>About</a>
-                <a>Privacy Policy</a>
-                <a>Terms of Service</a>
+              <nav className="text-xs sm:text-sm font-extralight gap-6 sm:gap-8  flex items-center">
+                <Link to="/about" className="text-white/20 hover:text-white/50">
+                  About
+                </Link>
+                <Link
+                  to="/privacy"
+                  className="text-white/20 hover:text-white/50"
+                >
+                  Privacy Policy
+                </Link>
+                <Link to="/terms" className="text-white/20 hover:text-white/50">
+                  Terms of Service
+                </Link>
               </nav>
             </div>
           </div>
         </footer>
       </Layout>
     </div>
-  );
-};
+  )
+}
 
-export default About;
+export default About
