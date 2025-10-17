@@ -1,8 +1,19 @@
+import { cn } from "@/lib/utils";
 import { PropsWithChildren } from "react";
 
-const Layout = ({ children }: PropsWithChildren) => {
+const Layout = ({
+  children,
+  className = "",
+}: PropsWithChildren & { className?: string }) => {
   return (
-    <div className="w-full h-full px-4 sm:px-[4%] lg:px-[8%]">{children}</div>
+    <div
+      className={cn(
+        `w-full h-full px-4 sm:px-[4%] lg:px-[8%]  bg-[#0F0F0F]`,
+        className,
+      )}
+    >
+      {children}
+    </div>
   );
 };
 

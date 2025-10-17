@@ -2,23 +2,23 @@ import React, {
   PropsWithChildren,
   useState,
   useEffect,
-  useCallback
-} from "react"
-import { AnimatePresence, motion } from "framer-motion"
+  useCallback,
+} from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
-} from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Label } from "@/components/ui/label"
-import { Toaster } from "@/components/ui/toaster"
-import { toast } from "sonner"
-import Layout from "@/components/Layout"
-import Nav from "@/components/Nav"
-import { Link } from "react-router-dom"
+  SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Toaster } from "@/components/ui/toaster";
+import { toast } from "sonner";
+import Layout from "@/components/Layout";
+import Nav from "@/components/Nav";
+import { Link } from "react-router-dom";
 
 const ArrowRight = () => {
   return (
@@ -36,29 +36,29 @@ const ArrowRight = () => {
         strokeLinejoin="round"
       />
     </svg>
-  )
-}
+  );
+};
 
 const Hero = ({
   prefillEmail,
   setPrefillEmailAndScroll,
-  subscriberCount
+  subscriberCount,
 }: {
-  prefillEmail: string
-  setPrefillEmailAndScroll: (email: string) => void
-  subscriberCount: number | null
+  prefillEmail: string;
+  setPrefillEmailAndScroll: (email: string) => void;
+  subscriberCount: number | null;
 }) => {
-  const [email, setEmail] = useState("")
+  const [email, setEmail] = useState("");
 
   // Update if prop changes (for reset)
   React.useEffect(() => {
-    if (!prefillEmail) setEmail("")
-  }, [prefillEmail])
+    if (!prefillEmail) setEmail("");
+  }, [prefillEmail]);
 
   const handleJoinClick = (e: React.FormEvent) => {
-    e.preventDefault()
-    setPrefillEmailAndScroll(email.trim())
-  }
+    e.preventDefault();
+    setPrefillEmailAndScroll(email.trim());
+  };
 
   return (
     <div className="w-full flex flex-col gap-8">
@@ -118,26 +118,26 @@ const Hero = ({
         </motion.div>
       </motion.div>
     </div>
-  )
-}
+  );
+};
 
 const useSubscribe = ({
   mode,
-  onAfterSubscribe
+  onAfterSubscribe,
 }: {
-  mode: "professional" | "client"
-  onAfterSubscribe?: () => void
+  mode: "professional" | "client";
+  onAfterSubscribe?: () => void;
 }) => {
   const [data, setData] = useState<{
-    email: string
-    firstName: string
-    industry: string
+    email: string;
+    firstName: string;
+    industry: string;
   }>({
     industry: "",
     firstName: "",
-    email: ""
-  })
-  const [isLoading, setIsLoading] = useState(false)
+    email: "",
+  });
+  const [isLoading, setIsLoading] = useState(false);
 
   // Listen for a CustomEvent to update email
   React.useEffect(() => {
@@ -148,42 +148,42 @@ const useSubscribe = ({
       ) {
         setData((d) => ({
           ...d,
-          email: (e as CustomEvent).detail.email
-        }))
+          email: (e as CustomEvent).detail.email,
+        }));
       }
     }
-    window.addEventListener("prefill-footer-email", handlePrefillEmail)
+    window.addEventListener("prefill-footer-email", handlePrefillEmail);
     return () =>
-      window.removeEventListener("prefill-footer-email", handlePrefillEmail)
-  }, [])
+      window.removeEventListener("prefill-footer-email", handlePrefillEmail);
+  }, []);
 
   const onFormChange = (e: any) => {
-    const value = e.target.value
-    const name = e.target.name
+    const value = e.target.value;
+    const name = e.target.name;
     if (["firstName", "industry", "email"].includes(name)) {
       setData({
         ...data,
-        [name]: value
-      })
+        [name]: value,
+      });
     }
-  }
+  };
 
   const onSubmit = async (e: any) => {
-    e.preventDefault()
+    e.preventDefault();
     // Check terms checkbox:
     const termsAccepted = (document.querySelector("#terms") as HTMLInputElement)
-      .dataset.state
+      .dataset.state;
 
     if (termsAccepted !== "checked") {
-      toast.error("You must accept the terms to join the waitlist.")
-      return
+      toast.error("You must accept the terms to join the waitlist.");
+      return;
     }
 
-    const body = data
+    const body = data;
     if (mode === "client") {
-      body.industry = "client"
+      body.industry = "client";
     }
-    setIsLoading(true)
+    setIsLoading(true);
     try {
       const res = await fetch(
         "https://mfebhamkxngghywfgfac.supabase.co/functions/v1/early-access",
@@ -191,48 +191,48 @@ const useSubscribe = ({
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Accept: "application/json"
+            Accept: "application/json",
           },
-          body: JSON.stringify(body)
-        }
-      )
+          body: JSON.stringify(body),
+        },
+      );
       if (res.ok) {
         toast("Sign Up Success!", {
           description:
-            "You will receive updates in a few weeks when we release IndieVia"
-        })
+            "You will receive updates in a few weeks when we release IndieVia",
+        });
         setData({
           industry: "",
           firstName: "",
-          email: ""
-        })
+          email: "",
+        });
         if (onAfterSubscribe) {
-          onAfterSubscribe()
+          onAfterSubscribe();
         }
       } else {
-        const resp = await res.json()
-        console.error(resp.errors)
+        const resp = await res.json();
+        console.error(resp.errors);
         toast.error("Uh oh!", {
-          description: "There was an error when signing up!"
-        })
+          description: "There was an error when signing up!",
+        });
       }
     } catch (e) {
       toast.error("Uh oh!", {
-        description: "There was an error when signing up!"
-      })
-      console.error(e)
+        description: "There was an error when signing up!",
+      });
+      console.error(e);
     }
 
-    setIsLoading(false)
-  }
+    setIsLoading(false);
+  };
 
   return {
     formData: data,
     onFormChange,
     onSubmit,
-    isLoading
-  }
-}
+    isLoading,
+  };
+};
 
 const ImageAutoScrollSection = () => {
   return (
@@ -294,8 +294,8 @@ const ImageAutoScrollSection = () => {
         </div>
       </div>
     </section>
-  )
-}
+  );
+};
 
 const MasonryLayout = () => {
   return (
@@ -443,44 +443,44 @@ const MasonryLayout = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 const Footer = ({
   prefillEmail,
   mode,
-  onAfterSubscribe
+  onAfterSubscribe,
 }: {
-  prefillEmail?: string
-  mode: "professional" | "client"
-  onAfterSubscribe?: () => void
+  prefillEmail?: string;
+  mode: "professional" | "client";
+  onAfterSubscribe?: () => void;
 }) => {
   const { onFormChange, onSubmit, isLoading, formData } = useSubscribe({
     mode,
-    onAfterSubscribe
-  })
-  const emailInputRef = React.useRef<HTMLInputElement>(null)
+    onAfterSubscribe,
+  });
+  const emailInputRef = React.useRef<HTMLInputElement>(null);
 
   // Prefill email and focus when prop changes
   React.useEffect(() => {
     if (prefillEmail && emailInputRef.current) {
-      emailInputRef.current.value = prefillEmail
-      emailInputRef.current.focus()
+      emailInputRef.current.value = prefillEmail;
+      emailInputRef.current.focus();
       // Ensure React's onChange/onInput fires for controlled state update
-      const event = new Event("input", { bubbles: true })
-      const change = new Event("change", { bubbles: true })
-      emailInputRef.current.dispatchEvent(event)
-      emailInputRef.current.dispatchEvent(change)
+      const event = new Event("input", { bubbles: true });
+      const change = new Event("change", { bubbles: true });
+      emailInputRef.current.dispatchEvent(event);
+      emailInputRef.current.dispatchEvent(change);
     }
     // If prefillEmail goes blank, clear email field and update state
     if (prefillEmail === "" && emailInputRef.current) {
-      emailInputRef.current.value = ""
-      const event = new Event("input", { bubbles: true })
-      const change = new Event("change", { bubbles: true })
-      emailInputRef.current.dispatchEvent(event)
-      emailInputRef.current.dispatchEvent(change)
+      emailInputRef.current.value = "";
+      const event = new Event("input", { bubbles: true });
+      const change = new Event("change", { bubbles: true });
+      emailInputRef.current.dispatchEvent(event);
+      emailInputRef.current.dispatchEvent(change);
     }
-  }, [prefillEmail])
+  }, [prefillEmail]);
 
   return (
     <footer className="grid grid-cols-2 gap-12 md:gap-16 xl:gap-20 mt-48">
@@ -694,51 +694,51 @@ const Footer = ({
         </div>
       </div>
     </footer>
-  )
-}
+  );
+};
 
 const Index: React.FC = () => {
-  const [mode, setMode] = useState<"professional" | "client">("professional")
-  const [heroPrefillEmail, setHeroPrefillEmail] = useState("")
-  const [subscriberCount, setSubscriberCount] = useState<number | null>(null)
+  const [mode, setMode] = useState<"professional" | "client">("professional");
+  const [heroPrefillEmail, setHeroPrefillEmail] = useState("");
+  const [subscriberCount, setSubscriberCount] = useState<number | null>(null);
 
   // Fetch the current subscriber count from the API
   const fetchSubscriberCount = useCallback(async () => {
     try {
       const res = await fetch(
-        "https://mfebhamkxngghywfgfac.supabase.co/functions/v1/smart-api"
-      )
+        "https://mfebhamkxngghywfgfac.supabase.co/functions/v1/smart-api",
+      );
       if (res.ok) {
-        const json = await res.json()
+        const json = await res.json();
         if (typeof json.count === "number") {
-          setSubscriberCount(json.count)
+          setSubscriberCount(json.count);
         }
       }
     } catch (e) {
       // optionally handle error
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
-    fetchSubscriberCount()
-  }, [fetchSubscriberCount])
+    fetchSubscriberCount();
+  }, [fetchSubscriberCount]);
 
   // Handles scroll and fires a CustomEvent for Footer form email prefill
   const setPrefillEmailAndScroll = (email: string) => {
-    setHeroPrefillEmail(email)
+    setHeroPrefillEmail(email);
     setTimeout(() => {
-      const target = document.getElementById("early-access-form")
+      const target = document.getElementById("early-access-form");
       if (target) {
-        target.scrollIntoView({ behavior: "smooth", block: "center" })
+        target.scrollIntoView({ behavior: "smooth", block: "center" });
         // Dispatch event for any listener (Footer/useSubscribe)
         setTimeout(() => {
           window.dispatchEvent(
-            new CustomEvent("prefill-footer-email", { detail: { email } })
-          )
-        }, 200)
+            new CustomEvent("prefill-footer-email", { detail: { email } }),
+          );
+        }, 200);
       }
-    }, 50)
-  }
+    }, 50);
+  };
 
   return (
     <div className="w-full max-w-[1440px] max-auto overflow-hidden text-white">
@@ -1085,7 +1085,7 @@ const Index: React.FC = () => {
       </Layout>
       <Toaster />
     </div>
-  )
-}
+  );
+};
 
-export default Index
+export default Index;
