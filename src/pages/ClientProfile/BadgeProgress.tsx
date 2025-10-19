@@ -1,19 +1,17 @@
 const BadgeProgress = ({
   fullName,
   totalReferrals,
-  currentBadge = "Early supporter - Founding Year",
+  currentBadge = "",
 }: {
   currentBadge: string;
   totalReferrals: number;
   fullName: string;
 }) => {
-  const progress = 33;
+  const progress = Math.min(1, totalReferrals / 3) * 100;
 
   return (
     <div className="w-full space-y-3">
-      <div className="text-sm text-white/50">
-        {currentBadge || "Early Supporter - Founding Year"}
-      </div>
+      <div className="text-sm text-white/50">{currentBadge}</div>
 
       <div className="text-lg font-medium">{fullName || "Name not found"}</div>
 
@@ -27,21 +25,21 @@ const BadgeProgress = ({
               width: progress + "%",
             }}
           />
-          <div className="grid grid-cols-3 w-full items-center absolute top-0 left-0 -translate-y-1/4">
-            <div />
-            <div className="size-5 rounded-full bg-white -translate-x-1/2" />
-            <div className="size-5 rounded-full bg-white -translate-x-1/2" />
+          <div className="flex justify-between w-full items-center absolute top-0 left-0 -translate-y-1/4">
+            {/*<div />*/}
+            <div className="size-5 rounded-full bg-white " />
+            <div className="size-5 rounded-full bg-white" />
           </div>
-          <div className="grid grid-cols-3 w-full items-center absolute top-0 -translate-y-full -mt-3">
+          <div className="flex justify-between w-full items-center absolute top-0 -translate-y-full -mt-3">
             <div />
             <img
-              className="w-14 -translate-x-1/2 pointer-events-none select-none"
+              className="w-14 translate-x-1/3 pointer-events-none select-none"
               src="/badge-founding-year.png"
             />
-            <img
+            {/*<img
               src="/badge-3-refs.png"
               className={`w-14 pointer-events-none select-none -translate-x-1/2 ${totalReferrals < 3 ? `saturate-0` : ``}`}
-            />
+            />*/}
           </div>
         </div>
         <div className="w-full flex justify-between items-center mt-2">
@@ -49,7 +47,9 @@ const BadgeProgress = ({
 
           <div className="font-light text-sm">
             Referrals required to reach next badge:{" "}
-            <span className="font-medium text-brand">3</span>
+            <span className="font-medium text-brand">
+              {totalReferrals >= 3 ? 0 : 3 - totalReferrals}
+            </span>
           </div>
         </div>
       </div>

@@ -19,29 +19,22 @@ export type ProfileData = {
   twitter: string | null;
   user_id: string;
   youtube: string | null;
+  referral_code: string;
+  badge: string;
+  referral_count: number;
 };
 
 export const fetchClientProfile =
   (userId: string, isDashboard = false) =>
   async () => {
-    if (!userId) return null;
+    const res = await supabase.functions.invoke(
+      "client_profile/" + (isDashboard ? "dashboard" : userId),
+      { method: "GET" },
+    );
 
-    if (isDashboard) {
-      const res = await supabase
-        .from("client_profiles" as never)
-        .select("*")
-        .eq("user_id", userId)
-        .single();
-
-      return res?.data;
+    if (res.error) {
+      throw res.error;
     }
-
-    const res = await supabase
-      .from("client_profiles")
-      .select("*") // TODO: restrict
-      .eq("id", userId)
-      .single();
-
     return res.data as ProfileData;
   };
 

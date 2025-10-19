@@ -19,6 +19,12 @@ import EditProfileModal from "./EditProfileModal";
 import { useClientProfile } from "@/hooks/use-client-profile";
 import { useLocation, useParams } from "react-router-dom";
 import useUser from "@/hooks/use-user";
+import { useClientReviews } from "@/hooks/use-client-reviews";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export const EarlySupporterPill = ({ isSmall = false }) => {
   const ref = useRef<HTMLDivElement>(null);
@@ -86,14 +92,16 @@ export const EarlySupporterPill = ({ isSmall = false }) => {
   );
 };
 
-const BasicInfo = () => {
+const BasicInfo = ({ badge }: { badge?: string }) => {
   const [editActive, setEditActive] = useState(false);
   const [{ profileData }] = useClientProfile();
   const [{ user }] = useUser();
   const { clientId } = useParams();
   const { pathname } = useLocation();
+  const { count: reviewCount } = useClientReviews();
   const showEdit =
     pathname.includes("/client/dashboard") || user?.data?.user?.id === clientId;
+  const isDashboard = pathname?.includes("/client/dashboard");
 
   // Provide defaults to avoid undefined errors
   const fullName = profileData?.full_name || "Full Name";
@@ -136,17 +144,35 @@ const BasicInfo = () => {
           <img
             src={profilePicture}
             alt={fullName}
-            className="rounded-[18px] aspect-square w-[250px] h-fit object-cover"
+            className="rounded-[18px] aspect-square shadow-md w-[250px] h-fit object-cover"
           />
-          <div className="flex items-center py-3 justify-center gap-3">
-            <div className="text-sm text-white/50 font-bold">163 reviews</div>
+          <div className="flex items-center pt-2 pb-1 justify-center gap-3">
+            <div className="text-sm text-white/50 font-bold">
+              {reviewCount > 0
+                ? `Completed ${reviewCount} review(s)`
+                : "No reviews made yet"}
+            </div>
           </div>
         </div>
         <div className="lg:w-[500px]">
-          <EarlySupporterPill />
+          {badge && <EarlySupporterPill />}
           <div>
             <h1 className="text-2xl font-medium font-profile-header mt-4 flex items-center gap-2">
-              {fullName} <BadgeCheck className="text-sky-400" />
+              {fullName}{" "}
+              {profileData?.phoneVerified && (
+                <Tooltip>
+                  <TooltipTrigger>
+                    <BadgeCheck className="text-sky-400" />
+                  </TooltipTrigger>
+                  <TooltipContent align="center">
+                    <div className="font-profile-para text-xs">
+                      {isDashboard
+                        ? " You have verified your phone number."
+                        : "This user has verified their phone number."}
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              )}
             </h1>
             <p className="font-bold font-profile-para text-xs text-white/50 uppercase mt-2">
               {position}

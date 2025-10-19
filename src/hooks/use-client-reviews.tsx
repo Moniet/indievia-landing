@@ -149,6 +149,7 @@ export const fetchClientReviewsPage = async ({
     },
   );
 
+
   return res;
 };
 
@@ -176,7 +177,7 @@ export const useClientReviews = () => {
     initialPageParam: 1 as number,
     queryFn: fetchClientReviewsPage,
     getNextPageParam: (lastPage, allPages) => {
-      if (lastPage.data?.length === 0 || !lastPage) {
+      if (lastPage.data?.length >= lastPage.data?.count) {
         return;
       }
 
@@ -184,9 +185,10 @@ export const useClientReviews = () => {
     },
   });
 
-  const reviews = data?.pages.flatMap((page) => page.data);
-
+  const reviews = data?.pages.flatMap((page) => page.data?.data);
+  const count = data?.pages?.at(-1)?.data?.count;
   return {
+    count,
     reviews,
     ...rest,
   };

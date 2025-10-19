@@ -3,13 +3,12 @@ import { Copy, Check } from "lucide-react";
 import QRCode from "react-qr-code";
 
 type ReferralSectionProps = {
-  profileData?: unknown;
-  isLoading?: boolean;
+  referralCode: string;
+  isLoading: boolean;
 };
 
-const ReferralSection = ({ profileData, isLoading }: ReferralSectionProps) => {
+const ReferralSection = ({ referralCode, isLoading }: ReferralSectionProps) => {
   const [copied, setCopied] = useState(false);
-  const referralCode = "TVDUWE4UDY";
 
   const handleCopy = async () => {
     try {
@@ -61,7 +60,7 @@ const ReferralSection = ({ profileData, isLoading }: ReferralSectionProps) => {
 
         <div>
           <QRCode
-            value="indievia.com/profile/123"
+            value={`${globalThis?.window?.location?.origin}/sign-up?referralCode=${referralCode}`}
             className="size-[200px] border"
           />
         </div>

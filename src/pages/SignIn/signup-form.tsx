@@ -27,6 +27,7 @@ export function SignupForm({
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
   const [email, setEmail] = useState("");
+  const [referralCode, setReferralCode] = useState("");
   const [mode, setMode] = useState<"client" | "pro">("client");
   const [{ user }, isLoadingUser] = useUser();
   const nav = useNavigate();
@@ -43,6 +44,7 @@ export function SignupForm({
         body: {
           email,
           fullName,
+          referralCode,
           mode: mode === "pro" ? "professional" : "client",
           redirectTo: window.location.origin + "/auth/confirm",
         },
@@ -75,7 +77,7 @@ export function SignupForm({
     if (user && user.data.user.aud === "authenticated") {
       const profile = await fetchUserProfile(user.data.user.id);
       if (profile.data.role === "client") {
-        nav("/client/" + user.data.user.id, {
+        nav("/client/dashboard", {
           replace: true,
         });
       } else if (profile.data.role === "professional") {
@@ -87,6 +89,13 @@ export function SignupForm({
   }, [user]);
 
   useEffect(() => {
+    (() => {
+      const search = new URLSearchParams(window.location.search);
+      if (search.get("referralCode")) {
+        setReferralCode(search.get("referralCode"));
+      }
+    })();
+
     verify();
   }, [user, verify]);
 
@@ -148,6 +157,18 @@ export function SignupForm({
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+              />
+              {error && <FieldError>{error}</FieldError>}
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="email">Referral Code (optional)</FieldLabel>
+              <Input
+                id="referralCode"
+                type="referral"
+                placeholder="F3AB25AS"
+                className="uppercase"
+                value={referralCode}
+                onChange={(e) => setReferralCode(e.target.value?.trim())}
               />
               {error && <FieldError>{error}</FieldError>}
             </Field>

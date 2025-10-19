@@ -19,8 +19,13 @@ import { useParams } from "react-router-dom";
 const ClientProfile = () => {
   const [{ user }, isLoading] = useUser();
   const [{ profileData, isFetching }, isLoadingProfile] = useClientProfile();
-  const { reviews, isLoading: loadingReviews } = useClientReviews();
-  const { clientId } = useParams();
+  const {
+    reviews,
+    hasNextPage: hasMoreReviews,
+    fetchNextPage: fetchMoreReviews,
+    isLoading: loadingReviews,
+    isFetchingNextPage: isLoadingMoreReviews,
+  } = useClientReviews();
   const flatReviews = reviews;
   const { favorites, isLoading: loadingFavorites } = useClientFavorites();
 
@@ -51,23 +56,35 @@ const ClientProfile = () => {
     );
   }
 
+  console.log({ profileData });
   return (
     <>
       <Layout className="pb-20">
         <ProfileNav />
         <div className="w-[800px] mx-auto">
           <div className="w-full h-full space-y-32">
-            <BasicInfo />
+            <BasicInfo badge={profileData?.badge} />
             <BadgeProgress
               fullName={profileData?.full_name}
-              currentBadge={profileData?.current_badge}
-              totalReferrals={0}
+              currentBadge={
+                profileData?.badge === "early_supporter"
+                  ? "Early Supporter - Founding Year"
+                  : ""
+              }
+              totalReferrals={profileData?.referral_count}
             />
-            <ReferralSection />
+            {profileData?.referral_code && (
+              <ReferralSection
+                isLoading={!profileData}
+                referralCode={profileData?.referral_code}
+              />
+            )}
             <Reviews
               mode="client-dashboard"
               isLoading={loadingReviews}
               reviews={flatReviews}
+              onClickViewMore={fetchMoreReviews}
+              isLoadingViewMore={isLoadingMoreReviews}
             />
 
             <div className="w-full">

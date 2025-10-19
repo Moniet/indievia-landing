@@ -4,7 +4,7 @@ import { Reviews as TReviews } from "@/hooks/use-client-reviews";
 import { supabase } from "@/integrations/supabase/client";
 import RatingStars from "./RatingStars";
 import { useClientProfile } from "@/hooks/use-client-profile";
-import { LucideInfo, PenSquare, ThumbsUp, Trash2 } from "lucide-react";
+import { Loader2, LucideInfo, PenSquare, ThumbsUp, Trash2 } from "lucide-react";
 import { ProfessionalProfilePublicData } from "@/hooks/use-professional-profile-public";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Textarea } from "./ui/textarea";
@@ -131,35 +131,37 @@ export const ReviewItem = ({
       </Avatar>
 
       {/*TODO: show badge if exists ^^ */}
-      <div className="space-y-2 overflow-hidden">
+      <div className="space-y-3 overflow-hidden">
         <div>
           <Link to={`/client/${clientProfileId}`}>
             <div className="flex gap-2 items-center mb-1">
               <div className="text-white">{fullName}</div>
-              <div className="text-white/50 text-xs">|</div>
-              <div className="text-white/50 font-light text-xs -mb-[2px]">
-                {new Date(review.created_at || new Date())
-                  .toString()
-                  .slice(0, 10)}
-              </div>
             </div>
           </Link>
-          <RatingStars
-            color={"fill-yellow-500"}
-            rating={review.rating}
-            totalRatingValue={5}
-          />
+          <div className="flex gap-3 items-center">
+            <RatingStars
+              color={"fill-yellow-500"}
+              rating={review.rating}
+              totalRatingValue={5}
+            />
+            <div className="text-white/50 font-light text-xs">
+              {new Date(review.created_at || new Date())
+                .toString()
+                .slice(0, 10)
+                .replace(" ", ", ")}
+            </div>
+          </div>
         </div>
-        {gallery?.length && (
+        {!!gallery?.length && (
           <div className="max-w-full w-full overflow-hidden">
-            <div className="flex gap-2 overflow-x-auto pb-1 pt-1 max-w-full flex-1">
+            <div className="flex gap-2 overflow-x-auto max-w-full flex-1">
               {gallery.map((src, idx) => (
                 <GalleryImage key={idx} src={src} id={`img-${idx}`} />
               ))}
             </div>
           </div>
         )}
-        <p className="text-xs lg:text-sm mt leading-5 max-w-[500px] text-[#BDBDBD] text-pretty">
+        <p className="text-xs lg:text-sm leading-5 max-w-[500px] text-[#BDBDBD] text-pretty">
           {review.review}
         </p>
         <div className="flex pt-2 w-full">
@@ -187,7 +189,7 @@ export const ReviewItem = ({
                   <AlertDialogTrigger asChild>
                     <button className="flex items-center font-light text-red-400 hover:text-red-500 ">
                       <Trash2 className="size-4 mr-1" />{" "}
-                      <span className="text-sm">Delete</span>
+                      <span className="text-sm font-medium">Delete</span>
                     </button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
@@ -268,6 +270,9 @@ export type ReviewsProps = {
     | "client-dashboard";
   reviews: ProfessionalProfilePublicData["reviews"];
   isLoading?: boolean;
+  hasMoreReviews?: boolean;
+  isLoadingViewMore?: boolean;
+  onClickViewMore: () => void;
 };
 
 const reviewModal = z.object({
@@ -499,6 +504,8 @@ const ReviewModal = ({
 const Reviews = ({
   mode = "signed-out",
   reviews,
+  hasMoreReviews = false,
+  isLoadingViewMore,
   isLoading = true,
 }: ReviewsProps) => {
   const [{ profileData }] = useClientProfile();
@@ -508,11 +515,6 @@ const Reviews = ({
   const [{ user }] = useUser();
 
   const userRole = user?.data?.user?.user_metadata?.role;
-
-  console.log({
-    profile,
-    reviews,
-  });
 
   return (
     <div className="flex flex-col items-end w-full px-16 mx-auto">
@@ -625,6 +627,20 @@ const Reviews = ({
             </div>
           )}
         </div>
+        {hasMoreReviews && (
+          <div className="flex justify-center py-5">
+            <Button
+              disabled={isLoadingViewMore}
+              size="sm"
+              className="bg-white text-black rounded-full hover:bg-white hover:text-black hover:opacity-50 transition-all"
+            >
+              {isLoadingViewMore && (
+                <Loader2 className="size-4 animate-spin mr-2" />
+              )}
+              View More
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

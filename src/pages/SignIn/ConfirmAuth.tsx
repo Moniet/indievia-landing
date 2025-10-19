@@ -20,22 +20,8 @@ const ConfirmAuth = () => {
     const role: string | undefined = user?.user_metadata?.role;
 
     // Optionally create a profile if needed for new user
-    if (userId && role) {
-      const { data: existingProfile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("user_id", userId)
-        .single();
-
-      if (!existingProfile) {
-        await supabase.from("profiles").insert([
-          {
-            user_id: userId,
-            role,
-          },
-        ]);
-      }
-    }
+    //
+    await supabase.functions.invoke(`auth_check?email=${user?.email}`);
 
     // Redirect based on role
     if (role === "client") {
@@ -49,7 +35,7 @@ const ConfirmAuth = () => {
   };
 
   return (
-    <div className="w-full h-full flex items-center justify-center">
+    <div className="w-full h-screen flex items-center justify-center">
       <div className="flex items-center">
         <Loader2 className="size-6 animate-spin mr-2 duration-1000" />
         <span className="text-2xl">Confirming ...</span>

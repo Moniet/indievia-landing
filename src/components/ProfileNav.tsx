@@ -43,6 +43,8 @@ export const ProfileNav = () => {
     }
   };
 
+  const isProfessional = profile?.data?.role === "professional";
+
   return (
     <nav
       id="profile-nav"
@@ -60,68 +62,70 @@ export const ProfileNav = () => {
           </span>
         </h1>
       </Link>
-      {profile && !profileError && !profile?.error && (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <div className="flex gap-8 items-center justify-between">
-              <Bell className="size-5 text-white" />
-              <div className="rounded-full bg-brand flex items-center justify-start w-fit py-[5px] px-[5px] pr-[5px]">
-                <Avatar className="size-[30px]">
-                  <AvatarImage
-                    src={profileUrl || undefined}
-                    alt={fullName || "User avatar"}
-                    className={profileUrl ? "" : "animate-pulse"}
-                  />
-                  <AvatarFallback>
-                    {fullName?.[0]?.toUpperCase() || "U"}
-                  </AvatarFallback>
-                </Avatar>
+      <div className="flex items-center gap-10">
+        {isProfessional && <Bell className="size-5 text-white" />}
+        {profile && !profileError && !profile?.error && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <div className="flex gap-8 items-center justify-between">
+                <div className="rounded-full bg-brand flex items-center justify-start w-fit py-[5px] px-[5px] pr-[5px]">
+                  <Avatar className="size-[30px]">
+                    <AvatarImage
+                      src={profileUrl || undefined}
+                      alt={fullName || "User avatar"}
+                      className={profileUrl ? "" : "animate-pulse"}
+                    />
+                    <AvatarFallback>
+                      {fullName?.[0]?.toUpperCase() || "U"}
+                    </AvatarFallback>
+                  </Avatar>
 
-                <div className="flex items-center justify-center w-[30px]">
-                  <ChevronDown
-                    className="text-white size-3"
-                    strokeWidth={1.5}
-                  />
+                  <div className="flex items-center justify-center w-[30px]">
+                    <ChevronDown
+                      className="text-white size-4"
+                      strokeWidth={2}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align={"center"}>
-            <DropdownMenuItem asChild>
-              <Link
-                to={
-                  userRole === "client"
-                    ? `/client/dashboard`
-                    : "/professional/dashboard"
-                }
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align={"center"}>
+              <DropdownMenuItem asChild>
+                <Link
+                  to={
+                    userRole === "client"
+                      ? `/client/dashboard`
+                      : "/professional/dashboard"
+                  }
+                >
+                  <LucideUser className="size-4 mr-2" /> My Profile
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <LucideSearch className="size-4 mr-2" /> Search
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <LucideMail className="size-4 mr-2" /> Contact
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <LucideBug className="size-4 mr-2" /> Report Bugs
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="hover:!bg-red-600"
+                onClick={handleSignOut}
+                disabled={signingOut}
               >
-                <LucideUser className="size-4 mr-2" /> My Profile
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <LucideSearch className="size-4 mr-2" /> Search
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <LucideMail className="size-4 mr-2" /> Contact
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <LucideBug className="size-4 mr-2" /> Report Bugs
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="hover:!bg-red-600"
-              onClick={handleSignOut}
-              disabled={signingOut}
-            >
-              {signingOut ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <LucideArrowUpRightFromSquare className="size-4 mr-2" />
-              )}{" "}
-              Sign Out
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
+                {signingOut ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <LucideArrowUpRightFromSquare className="size-4 mr-2" />
+                )}{" "}
+                Sign Out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+      </div>
     </nav>
   );
 };
