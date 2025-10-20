@@ -149,7 +149,6 @@ export const fetchClientReviewsPage = async ({
     },
   );
 
-
   return res;
 };
 
@@ -165,15 +164,14 @@ export const fetchClientReviewsPage = async ({
  */
 export const useClientReviews = () => {
   const [{ user }] = useUser();
-  const { data: profile, isLoading } = useProfile();
   const { clientId } = useParams();
 
   const id: string | undefined =
-    clientId && clientId !== "dashboard" ? clientId : profile?.data?.id;
+    clientId && clientId !== "dashboard" ? clientId : user?.data?.user?.id;
 
   const { data, ...rest } = useInfiniteQuery({
     queryKey: ["client-reviews", { id }],
-    enabled: !!id && !isLoading,
+    enabled: !!id,
     initialPageParam: 1 as number,
     queryFn: fetchClientReviewsPage,
     getNextPageParam: (lastPage, allPages) => {

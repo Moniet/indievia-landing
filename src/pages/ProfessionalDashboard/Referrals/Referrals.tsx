@@ -1,14 +1,102 @@
 import { useState } from "react";
-import { Copy, Info, Check } from "lucide-react";
+import { Copy, Info, Check, CheckCircle2 } from "lucide-react";
 import BadgeProgress from "../BadgeProgress";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import Donut from "./Donut";
-import { Item, ItemContent, ItemHeader, ItemTitle } from "@/components/ui/item";
+import { useProfessionalProfile } from "@/hooks/use-professional-profile";
+import { useRecentReferrals } from "@/hooks/use-referrals";
+import ReferralsSkeleton from "./Skeleton/Skeleton";
+
+const BadgeDonut = ({
+  src,
+  progress,
+  children,
+}: {
+  src: string;
+  progress: number;
+  children?: React.ReactNode;
+}) => (
+  <div className="rounded-full select-none bg-neutral-700 size-[60px] p-2 flex items-center justify-center relative">
+    <img
+      src={src}
+      className="translate-y-[9px] w-full h-auto"
+      alt=""
+      style={{
+        filter: `saturate(${progress})`,
+        transition: "filter 0.35s cubic-bezier(.42,0,.58,1)",
+      }}
+    />
+    <div className="absolute top-0 left-0">
+      <Donut
+        radius={30}
+        strokeColor="stroke-[#EE714E]"
+        progress={progress}
+        stroke={2}
+      />
+    </div>
+    {progress === 1 && (
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-fit h-fit rounded-full">
+        <CheckCircle2 className="size-5 text-white fill-green-500" />
+      </div>
+    )}
+    {children}
+  </div>
+);
+
+export const badges = [
+  {
+    referrals: 3,
+    name: "early_supporter",
+    src: "/badge-founding-year.png",
+    title: "Early supporter",
+  },
+  {
+    referrals: 5,
+    name: "5_referrals",
+    src: "/badge-5-refs.png",
+    title: "Golden Profile Name",
+  },
+  {
+    referrals: 10,
+    name: "10_referrals",
+    src: "/badge-10-refs.png",
+    title: "Front page showcase",
+  },
+  {
+    referrals: 20,
+    name: "verified_og",
+    src: "/badge-verified-og.png",
+    title: "Verified OG",
+  },
+];
 
 const Referrals = () => {
+  const [{ profileData, isLoading: profileIsLoading }] =
+    useProfessionalProfile();
   const [copied, setCopied] = useState(false);
-  const referralCode = "4ab-ab1-bbabs";
+  const { referrals, isLoading: referralsIsLoading } = useRecentReferrals();
+
+  const isLoading = profileIsLoading || referralsIsLoading;
+
+  const referralCode = profileData?.referral_code;
+  const referralCount = profileData?.referral_count || 0;
+
+  const badgesWithProgress = badges.map((badge) => ({
+    ...badge,
+    progress: Math.min(1, referralCount / badge.referrals),
+  }));
+
+  const earnedBadges = badgesWithProgress.filter((b) => b.progress === 1);
+  const currentBadge = earnedBadges.length
+    ? earnedBadges[earnedBadges.length - 1]
+    : null;
 
   const handleCopy = async () => {
+    if (!referralCode) return;
     try {
       await navigator.clipboard.writeText(referralCode);
       setCopied(true);
@@ -18,6 +106,10 @@ const Referrals = () => {
     }
   };
 
+  if (isLoading) {
+    return <ReferralsSkeleton />;
+  }
+
   return (
     <div className="size-full">
       <div className="text-xl font-medium text-white">Referrals</div>
@@ -26,24 +118,22 @@ const Referrals = () => {
       <div className="p-7 rounded-lg border border-white/5 bg-[#18181A]">
         <div className="flex gap-7">
           <div className="w-fit h-fit rounded-full bg-zinc-800 relative">
-            <Donut
-              progress={0.8}
-              strokeColor={"stroke-[#F38B6F]"}
-              radius={40}
-            />
-            <img
-              src="/badge-founding-year.png"
-              className="w-14 h-auto absolute -translate-x-1/2 top-1/2 -translate-y-1/3 left-1/2"
+            <BadgeDonut
+              src={badgesWithProgress[0].src}
+              progress={badgesWithProgress[0].progress}
             />
           </div>
           <BadgeProgress />
         </div>
         <div className="border-t mt-8 pt-6 border-zinc-800 w-full">
           <div className="w-fit">
-            <div className="text-white/70 text-xs font-light mb-7 flex items-center">
-              <Info className="size-4 mr-3" /> Invite 2 more people to reach
-              your next milestone
-            </div>
+            {referralCount < 20 && (
+              <div className="text-white/70 text-xs font-light mb-7 flex items-center">
+                <Info className="size-4 mr-3" /> Invite{" "}
+                {[3, 5, 10, 20].find((n) => n > referralCount) - referralCount}{" "}
+                more people to reach your next milestone
+              </div>
+            )}
             <div className="bg-white/10 rounded-md pl-4  h-12 flex items-center uppercase">
               <span>{referralCode}</span>
               <button
@@ -67,37 +157,40 @@ const Referrals = () => {
           <div className="flex gap-7 w-full">
             <div className="flex-1 border border-white/5 rounded-lg px-5 py-3 space-y-2 bg-[#18181A]">
               <div className="font-medium text-sm">No. badges earned</div>
-              <div className="text-3xl font-medium">1</div>
-              <div className="text-sm text-white/50">Level 1</div>
+              <div className="text-3xl font-medium">{earnedBadges.length}</div>
+              <div className="text-sm text-white/50">
+                Level {earnedBadges.length + 1}
+              </div>
             </div>
             <div className="flex-1 border border-white/5 rounded-lg px-5 py-3 space-y-2 bg-[#18181A]">
               <div className="font-medium text-sm">No. of referrals</div>
-              <div className="text-3xl font-medium">3</div>
+              <div className="text-3xl font-medium">{referralCount}</div>
               <div className="text-sm text-white/50">Referrals by you</div>
             </div>
           </div>
           <div className="border border-white/5 rounded-lg p-5 bg-[#18181A] flex-1 flex flex-col">
-            <div className="font-medium text-sm">Recently used referrals</div>
-            <div className="text-sm text-white/50 font-light mt-1">
-              3 referrals were used
-            </div>
-            <div className="flex flex-col gap-5 mt-7">
-              <div className="flex items-center gap-5">
-                <div className="flex gap-3 w-full">
-                  <img
-                    src=""
-                    alt=""
-                    className="bg-white/50 w-[40px] h-[40px] rounded-full"
-                  />
-                  <div>
-                    <div className="text-sm">Olivia Rodriguez</div>
-                    <div className="text-sm font-light">
-                      olivia123@gmail.com
+            <div className="font-medium text-sm">Recently referrals</div>
+            <div className="flex flex-col gap-5 mt-7 flex-1 max-h-full overflow-y-auto">
+              {referrals?.data?.map((ref) => {
+                return (
+                  <div className="flex items-center gap-5" key={ref?.email}>
+                    <div className="flex gap-3 w-full">
+                      <img
+                        src=""
+                        alt=""
+                        className="bg-white/50 w-[40px] h-[40px] rounded-full"
+                      />
+                      <div>
+                        <div className="text-sm">
+                          {ref.fullName || "*<No Name Found*"}
+                        </div>
+                        <div className="text-sm font-light">{ref.email}</div>
+                      </div>
                     </div>
+                    <div className="text-white text-sm">Today</div>
                   </div>
-                </div>
-                <div className="text-white text-sm">Today</div>
-              </div>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -105,11 +198,42 @@ const Referrals = () => {
           <div className="border border-white/5 rounded-lg p-5 bg-[#18181A] flex-1">
             <div className="flex items-baseline w-full justify-between">
               <div className="text-lg">Badges</div>
-              <div className="text-sm text-white/50 underline">
-                How do I earn badges?
-              </div>
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger>
+                  <div className="text-sm text-white/50 underline cursor-pointer">
+                    How do I earn badges?
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="max-w-[250px] text-center text-pretty">
+                    Share your referral code. And for every few referrals,
+                    you'll earn new badges!
+                  </p>
+                </TooltipContent>
+              </Tooltip>
             </div>
-            <div className="grid grid-cols-2 gap-10"></div>
+            <div className="grid grid-cols-2 gap-x-10 gap-y-5 pt-5">
+              {badgesWithProgress.map((badge) => (
+                <div
+                  key={badge.name}
+                  className="flex flex-col items-center text-center space-y-2"
+                >
+                  <BadgeDonut src={badge.src} progress={badge.progress} />
+                  <div className="font-medium text-sm">{badge.title}</div>
+                  {badge.progress === 1 ? (
+                    currentBadge?.name === badge.name ? (
+                      <div className="text-sm text-purple-400">
+                        Current Badge
+                      </div>
+                    ) : (
+                      <div className="text-sm text-green-400">Earned</div>
+                    )
+                  ) : (
+                    <div className="text-sm text-white/50">{`${badge.referrals} Referrals`}</div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

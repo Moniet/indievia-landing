@@ -18,6 +18,8 @@ export type ProfessionalProfilePublicData = {
   youtube?: string | null;
   profile_picture_url: string;
   gallery: string[];
+  referral_code: string;
+  badge: string;
   reviews: {
     id: number;
     review: string;
@@ -52,7 +54,6 @@ const fetchPublicProfile = (slug?: string) => async () => {
 
 export const useProfessionalProfilePublic = () => {
   const { profileSlug } = useParams<{ profileSlug: string }>();
-  console.log({ profileSlug });
 
   const {
     isLoading,

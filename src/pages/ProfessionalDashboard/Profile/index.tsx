@@ -16,10 +16,12 @@ import {
   Plus,
   PlusCircle,
   PlusSquare,
+  User2,
 } from "lucide-react";
-import { ChangeEventHandler, useState, useRef } from "react";
+import { ChangeEventHandler, useState, useRef, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import ProfessionalProfilePreview from "../../ProfessionalProfile/ProfessionalProfilePreview";
 import { useCallback } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,6 +30,7 @@ import Donut from "../Referrals/Donut";
 import ProfileSkeletonLoader from "./ProfileSkeletonLoader";
 import { useEffect } from "react";
 import { useProfessionalProfile } from "@/hooks/use-professional-profile";
+import { useReviews } from "@/hooks/user-reviews";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import useUser from "@/hooks/use-user";
 
@@ -125,6 +128,11 @@ import {
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const Gallery = () => {
   const [{ user }] = useUser();
@@ -202,37 +210,52 @@ const Gallery = () => {
 
   const handleDelete = async () => {
     const userId = user?.data?.user?.id;
-    if (!pendingDeleteUrl || !user?.id) return;
-    setDeleting(pendingDeleteUrl);
+    if (!pendingDeleteUrl || !userId) return;
 
-    // Only delete within this user's folder
-    const nameInFolder = pendingDeleteUrl.split(`/${user.id}/`).pop() || "";
-    await supabase.storage.from("media").remove([`${user.id}/${nameInFolder}`]);
-    setMediaUrls((prev) => prev.filter((u) => u !== pendingDeleteUrl));
+    const originalMediaUrls = [...mediaUrls];
+    const urlToDelete = pendingDeleteUrl;
 
-    // Remove from gallery array in professional_profiles
-    const filtered = mediaUrls.filter((u) => u !== pendingDeleteUrl);
+    // Optimistically update UI
+    setMediaUrls((prev) => prev.filter((u) => u !== urlToDelete));
+    setDeleting(urlToDelete);
+    setShowAlert(false);
+    setPendingDeleteUrl(null);
+
+    // 1. Delete from storage
+    const nameInFolder = urlToDelete.split(`/${userId}/`).pop() || "";
+    const { error: storageError } = await supabase.storage
+      .from("media")
+      .remove([`${userId}/${nameInFolder}`]);
+
+    if (storageError) {
+      alert("Failed to delete image from storage: " + storageError.message);
+      setMediaUrls(originalMediaUrls); // Revert
+      setDeleting(null);
+      return;
+    }
+
+    // 2. Update gallery array in professional_profiles
+    const updatedGallery = originalMediaUrls.filter((u) => u !== urlToDelete);
     const { error: updateError } = await supabase
       .from("professional_profiles")
       .update({
-        gallery: filtered,
+        gallery: updatedGallery,
       })
       .eq("user_id", userId);
 
     if (updateError) {
       alert("Failed to update gallery: " + updateError.message);
+      setMediaUrls(originalMediaUrls); // Revert
     }
 
     setDeleting(null);
-    setShowAlert(false);
-    setPendingDeleteUrl(null);
   };
 
   return (
     <div className="flex gap-4 max-w-full overflow-x-auto">
       {/* Upload card design */}
-      <div className="size-48 rounded-lg bg-white/10 flex cursor-pointer border border-zinc-400 shrink-0 z-2 sticky left-0">
-        <div className="relative size-full flex">
+      <div className="size-48 rounded-lg bg-neutral-800 flex cursor-pointer border border-zinc-400 shrink-0 z-2 sticky z-10 left-0">
+        <div className="relative size-full flex z-[1000000]">
           <div className="m-auto">
             <div className="flex items-center text-sm m-auto">
               <Plus className="mr-2 size-5" />
@@ -267,7 +290,11 @@ const Gallery = () => {
             alt="gallery item"
           />
           <button
-            onClick={() => confirmDelete(url)}
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              confirmDelete(url);
+            }}
             className="absolute top-2 right-2 p-2 bg-black/50 rounded-full opacity-70 group-hover:opacity-100 transition"
             disabled={deleting === url}
             title="Delete image"
@@ -289,7 +316,10 @@ const Gallery = () => {
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleDelete}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete();
+              }}
               disabled={!!deleting}
               className="bg-destructive text-white hover:bg-destructive/90"
             >
@@ -307,14 +337,71 @@ export const Profile = () => {
   const setProfilePicture = useStore((s) => s.setUserProfileUrl);
   const name = useStore((s) => s.fullName);
   const [{ profileData, refetch }, isLoadingProfile] = useProfessionalProfile();
+  const [{ user }] = useUser();
+
+  const phoneVerified = user?.data?.user?.user_metadata?.phone_verified;
+
+  const badges = [
+    {
+      referrals: 3,
+      name: "early_supporter",
+      src: "/badge-founding-year.png",
+      tooltip: "'Early Supporter - Founding Year 2025', 3 Referrals required",
+      rewardName: "the 'Early Supporter' badge",
+    },
+    {
+      referrals: 5,
+      name: "5_referrals",
+      src: "/badge-5-refs.png",
+      tooltip: "Get a flashy 'Golden Profile Name' after 5 referrals",
+      rewardName: "the 'Golden Profile Name'",
+    },
+    {
+      referrals: 10,
+      name: "10_referrals",
+      src: "/badge-10-refs.png",
+      tooltip:
+        "Win a 'Front Page Showcase' badge with 10 referrals and get featured on our search page!",
+      rewardName: "the 'Front Page Showcase' badge",
+    },
+    {
+      referrals: 20,
+      name: "verified_og",
+      src: "/badge-verified-og.png",
+      tooltip:
+        "Get a permanent 'Verified OG' badge next to your name! (Only in 2025 with 20 referrals)",
+      rewardName: "the permanent 'Verified OG' badge",
+    },
+  ];
+
+  const referralCount = profileData?.referrals_count || 0;
+
+  const badgesWithProgress = badges.map((badge) => ({
+    ...badge,
+    progress: Math.min(1, referralCount / badge.referrals),
+  }));
+
+  const nextBadge = badges.find((badge) => referralCount < badge.referrals);
+  const referralsNeeded = nextBadge ? nextBadge.referrals - referralCount : 0;
+  const badgeMessage = nextBadge
+    ? `Give ${referralsNeeded} more referral${
+        referralsNeeded > 1 ? "s" : ""
+      } to unlock ${nextBadge.rewardName}`
+    : "You've unlocked all referral badges!";
+  const { data: reviewsData, isLoading: isLoadingReviews } = useReviews(
+    profileData?.slug,
+  );
+
+  const reviews = useMemo(() => {
+    return reviewsData?.pages?.flatMap((p) => p.data.reviews) || [];
+  }, [reviewsData]);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [uploadingProfilePic, setUploadingProfilePic] = useState(false);
 
   const [slugAvailable, setSlugAvailable] = useState<null | boolean>(null);
   const [checkingSlug, setCheckingSlug] = useState(false);
   const slugCheckRef = useRef<number>();
-
-  const [{ user }] = useUser();
 
   const {
     register,
@@ -340,7 +427,15 @@ export const Profile = () => {
     },
   });
 
-  const fullName = watch("fullName");
+  const formValues = watch();
+  const fullName = formValues.fullName;
+
+  const previewData = {
+    ...profileData,
+    ...formValues,
+    full_name: formValues.fullName,
+    profile_picture_url: profilePictureUrl,
+  };
 
   // Hydrate form when data arrives
   useEffect(() => {
@@ -385,8 +480,6 @@ export const Profile = () => {
       refetch();
 
       toast("Profile published!");
-
-      console.log("Profile saved successfully!");
     }
   };
 
@@ -452,7 +545,9 @@ export const Profile = () => {
             >
               <Avatar className="size-[100px] relative">
                 <AvatarImage src={profilePictureUrl} className="size-[100px]" />
-                <AvatarFallback>{getNameFallback(fullName)}</AvatarFallback>
+                <AvatarFallback>
+                  <User2 className="size-8" />
+                </AvatarFallback>
               </Avatar>
               <div className="bg-zinc-700 size-6 rounded-full flex items-center justify-center ml-auto -translate-y-full">
                 {uploadingProfilePic ? (
@@ -468,11 +563,22 @@ export const Profile = () => {
                 onChange={handleProfileUpload}
               />
             </div>
-            <div className="pl-5">
-              <EarlySupporterPill isSmall />
-              <div className="text-2xl mt-2 flex items-center">
+            <div className="pl-5 flex flex-col justify-center">
+              {referralCount > 3 && <EarlySupporterPill isSmall />}
+              {referralCount > 3 && <div className="h-2" />}
+
+              <div className="text-2xl flex items-center">
                 {fullName || "*Add your name below*"}{" "}
-                <BadgeCheck className="size-6 text-blue-400 ml-2" />
+                {!phoneVerified && (
+                  <Tooltip delayDuration={0}>
+                    <TooltipTrigger>
+                      <BadgeCheck className="size-6 text-blue-400 ml-2" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <div>Phone number has been verified!</div>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
               </div>
             </div>
           </div>
@@ -486,13 +592,21 @@ export const Profile = () => {
         <div className="flex flex-col gap-2">
           <div className="text-base">My Badges</div>
           <div className="text-xs text-neutral-500 font-light">
-            Give 2 more referrals to unlock the Golden profile name
+            {badgeMessage}
           </div>
           <div className="flex gap-5 mt-2">
-            <BadgeDonut src="/badge-founding-year.png" progress={1} />
-            <BadgeDonut src="/badge-5-refs.png" progress={0} />
-            <BadgeDonut src="/badge-10-refs.png" progress={0} />
-            <BadgeDonut src="/badge-verified-og.png" progress={0} />
+            {badgesWithProgress.map((badge) => (
+              <Tooltip key={badge.name}>
+                <TooltipTrigger>
+                  <BadgeDonut src={badge.src} progress={badge.progress} />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="max-w-[250px] text-center text-balance">
+                    {badge.tooltip}
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            ))}
           </div>
         </div>
       </div>
@@ -755,7 +869,7 @@ export const Profile = () => {
             <button
               type="button"
               className="px-4 py-2 rounded-md border border-white/20 flex items-center text-sm hover:bg-white/20 transition-colors bg-white/10"
-              onClick={() => {}}
+              onClick={() => setIsPreviewOpen(true)}
             >
               <Eye className="size-4 mr-2" />
               Preview
@@ -779,6 +893,14 @@ export const Profile = () => {
           </div>
         </form>
       </div>
+      {isPreviewOpen && (
+        <ProfessionalProfilePreview
+          onClose={() => setIsPreviewOpen(false)}
+          profileData={previewData}
+          reviews={reviews || []}
+          isLoading={isLoadingProfile || isLoadingReviews}
+        />
+      )}
     </div>
   );
 };

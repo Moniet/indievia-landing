@@ -55,8 +55,6 @@ const ClientProfile = () => {
       </div>
     );
   }
-
-  console.log({ profileData });
   return (
     <>
       <Layout className="pb-20">

@@ -85,14 +85,14 @@ const Gallery = ({ profileData, isLoading }: GalleryProps) => {
             const width = ref.current.getBoundingClientRect().width;
             setPageWidth(width);
             setPagesCount(
-              Math.max(0, Math.ceil(ref.current.scrollWidth / width) - 1),
+              Math.max(0, Math.ceil(ref.current.scrollWidth / width)),
             );
           }, 100);
         } else {
           const width = ref.current.getBoundingClientRect().width;
           setPageWidth(width);
           setPagesCount(
-            Math.max(0, Math.ceil(ref.current.scrollWidth / width) - 1),
+            Math.max(0, Math.ceil(ref.current.scrollWidth / width)),
           );
         }
 
@@ -174,7 +174,7 @@ const Gallery = ({ profileData, isLoading }: GalleryProps) => {
         )}
       </div>
       <div className="flex mt-5 select-none items-center gap-1 justify-center text-4xl">
-        {Array(Math.max(0, pagesCount - 1))
+        {Array(Math.max(0, pagesCount))
           .fill("")
           .map((_, i) => (
             <span

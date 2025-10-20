@@ -4,7 +4,15 @@ import { Reviews as TReviews } from "@/hooks/use-client-reviews";
 import { supabase } from "@/integrations/supabase/client";
 import RatingStars from "./RatingStars";
 import { useClientProfile } from "@/hooks/use-client-profile";
-import { Loader2, LucideInfo, PenSquare, ThumbsUp, Trash2 } from "lucide-react";
+import {
+  AlertTriangleIcon,
+  Loader2,
+  LucideInfo,
+  PenSquare,
+  Smartphone,
+  ThumbsUp,
+  Trash2,
+} from "lucide-react";
 import { ProfessionalProfilePublicData } from "@/hooks/use-professional-profile-public";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Textarea } from "./ui/textarea";
@@ -35,6 +43,7 @@ import {
   AlertDialogTrigger,
 } from "./ui/alert-dialog";
 import useUser from "@/hooks/use-user";
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 const GalleryImage = ({ src = "", id = "" }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -286,9 +295,13 @@ const reviewModal = z.object({
 const ReviewModal = ({
   open,
   onClose,
+  isPhoneVerified,
+  hasAlreadyReviewed,
 }: {
   open: boolean;
   onClose: () => void;
+  isPhoneVerified: boolean;
+  hasAlreadyReviewed: boolean;
 }) => {
   const {
     register,
@@ -376,7 +389,53 @@ const ReviewModal = ({
           <div className="pb-3" />
           <Separator />
         </DialogHeader>
-        <div className="space-y-5 p-1 pt-0 overflow-hidden">
+        {!isPhoneVerified && (
+          <>
+            <Alert className="bg-white/5">
+              <AlertTriangleIcon className="size-5 mr-2" />
+              <AlertTitle>Verify your phone number</AlertTitle>
+              <div className="mt-2">
+                <AlertDescription>
+                  <div>
+                    In order to leave reviews and ratings, you are required to
+                    verify your phone number.
+                  </div>
+                  <div className="flex">
+                    <Button
+                      size="sm"
+                      asChild
+                      className="w-fit mt-3"
+                      variant="normal"
+                    >
+                      <Link to={"/auth/verify-phone"}>Verify Phone</Link>
+                    </Button>
+                  </div>
+                </AlertDescription>
+              </div>
+            </Alert>
+          </>
+        )}
+        {hasAlreadyReviewed && (
+          <>
+            <Alert className="bg-white/5">
+              <AlertTriangleIcon className="size-5 mr-2" />
+              <AlertTitle>Only one review per professional.</AlertTitle>
+              <div className="mt-2">
+                <AlertDescription>
+                  <div>
+                    You can only leave one review for each professional.
+                    Alternatively, you can delete your review and create a new
+                    one.
+                  </div>
+                </AlertDescription>
+              </div>
+            </Alert>
+          </>
+        )}
+
+        <div
+          className={`space-y-5 p-1 pt-0 overflow-hidden ${isPhoneVerified || !hasAlreadyReviewed ? "" : "blur-sm pointer-events-none select-none"}`}
+        >
           <div>
             <Label className="text-xs">Rating</Label>
             <div className="py-2 mt-1 px-3 rounded-full bg-white/5 w-fit">
@@ -468,6 +527,7 @@ const ReviewModal = ({
                     )}
                     <button
                       type="button"
+                      disabled={!isPhoneVerified}
                       onClick={() =>
                         setGalleryItems((items) =>
                           items.filter((_, i) => i !== idx),
@@ -511,10 +571,11 @@ const Reviews = ({
   const [{ profileData }] = useClientProfile();
   const [showReviewDialog, setShowReviewDialog] = useState(false);
   const { data: profile } = useProfile();
-  const { profileSlug } = useParams();
   const [{ user }] = useUser();
+  const hasAlreadyReviewed = reviews?.[0]?.isUserReview;
 
   const userRole = user?.data?.user?.user_metadata?.role;
+  const isPhoneVerified = user?.data?.user?.user_metadata?.phone_verified;
 
   return (
     <div className="flex flex-col items-end w-full px-16 mx-auto">
@@ -527,6 +588,8 @@ const Reviews = ({
         </button>
       )}
       <ReviewModal
+        hasAlreadyReviewed={hasAlreadyReviewed}
+        isPhoneVerified={isPhoneVerified}
         open={showReviewDialog}
         onClose={() => setShowReviewDialog(false)}
       />

@@ -38,7 +38,7 @@ const ProfessionalProfile = () => {
               {...profileQueryRest}
             />
             <ReferralSection
-              profileData={profileData}
+              referralCode={profileData?.referral_code}
               isLoading={isProfileLoading}
               {...profileQueryRest}
             />

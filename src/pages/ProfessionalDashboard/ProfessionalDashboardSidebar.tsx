@@ -2,6 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useProfessionalProfile } from "@/hooks/use-professional-profile";
 import useUser from "@/hooks/use-user";
+import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import {
   Bug,
@@ -14,7 +15,7 @@ import {
   User,
   Users,
 } from "lucide-react";
-import { Link, useLocation, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 
 const DonutProgress = ({ progress = 0.75 }) => {
   // Simple donut SVG: 75% progress as an example
@@ -69,8 +70,12 @@ const ProfessionalDashboardSidebar = () => {
   const page = loc.pathname.split("/").at(-1);
   const [{ profileData }, isLoading] = useProfessionalProfile();
   const [{ user }] = useUser();
+  const nav = useNavigate();
 
-  const handleLogout = () => {};
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    nav("/");
+  };
 
   return (
     <div className="flex-[400px] [transition:flex_1s_ease] overflow-hidden flex-grow-0 h-screen p-5">
@@ -151,19 +156,20 @@ const ProfessionalDashboardSidebar = () => {
               <Avatar className="size-10">
                 <AvatarImage src={profileData?.profile_picture_url} />
                 <AvatarFallback>
-                  {profileData?.full_name[0] ||
-                    user?.data?.user?.user_metadata?.fullName}
+                  {profileData?.full_name?.[0] ||
+                    user?.data?.user?.user_metadata?.fullName?.[0]}
                 </AvatarFallback>
               </Avatar>
               <div>
                 <div className="text-sm">
-                  {profileData?.full_name}
+                  {profileData?.full_name ||
+                    user?.data?.user?.user_metadata?.fullName}
                   {isLoading && (
                     <div className="w-40 h-3 rounded-lg bg-white/50 animate-pulse" />
                   )}
                 </div>
                 <div className="text-sm font-light">
-                  {profileData?.email}{" "}
+                  {profileData?.email || user?.data?.user?.email}{" "}
                   {isLoading && (
                     <div className="w-20 h-3 mt-2 rounded-lg bg-white/50 animate-pulse" />
                   )}

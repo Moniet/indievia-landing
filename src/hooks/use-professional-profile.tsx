@@ -11,6 +11,8 @@ export type ProfessionalProfileData = {
   address: string;
   bio: string;
   slug: string;
+  referral_count: number;
+  badge: string;
   website?: string | null;
   instagram?: string | null;
   facebook?: string | null;
@@ -32,12 +34,18 @@ export const fetchProfessionalProfile = (userId: string) => async () => {
     .eq("user_id", userId)
     .single();
 
+  const { data: profile } = await supabase
+    .from("profiles" as never)
+    .select("referral_count,badge,referral_code")
+    .eq("user_id", userId)
+    .single();
+
   if (error) {
     // Optionally: throw or handle error
     return null;
   }
 
-  return data as ProfessionalProfileData;
+  return { ...(data || {}), ...profile } as ProfessionalProfileData;
 };
 
 export const useProfessionalProfile = () => {

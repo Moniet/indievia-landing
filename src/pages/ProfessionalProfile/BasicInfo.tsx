@@ -1,3 +1,8 @@
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { motion } from "framer-motion";
 import {
   BadgeCheck,
@@ -94,12 +99,18 @@ type BasicInfoProps = {
 const BasicInfo = ({ profileData, isLoading }: BasicInfoProps) => {
   return (
     <div className="flex w-full text-white justify-center gap-8">
-      <div className=" bg-white/10 rounded-[20px] p-2">
-        <img
-          src={profileData?.profile_picture_url}
-          alt="Sample user"
-          className="rounded-[18px] aspect-video w-[450px] h-[280px] object-cover"
-        />
+      <div className=" bg-white/10 rounded-[20px] p-2 relative">
+        {!isLoading && (
+          <img
+            src={profileData?.profile_picture_url}
+            alt="Sample user"
+            className="rounded-[18px] aspect-video w-[450px] h-[280px] object-cover"
+            style={{ opacity: isLoading ? 0 : 1 }}
+          />
+        )}
+        {isLoading && (
+          <div className="animate-pulse bg-white/10 rounded-[18px] w-[450px] h-[280px]" />
+        )}
         <div className="flex items-center py-3 justify-center gap-3">
           <div className="flex gap-1 ">
             <Star className="size-3 fill-brand stroke-brand" />
@@ -113,7 +124,7 @@ const BasicInfo = ({ profileData, isLoading }: BasicInfoProps) => {
           </div>
         </div>
       </div>
-      <div className="">
+      <div className="w-[500px]">
         <EarlySupporterPill />
         <div>
           <h1 className="text-2xl font-medium font-profile-header mt-4 flex items-center gap-2">
@@ -123,7 +134,14 @@ const BasicInfo = ({ profileData, isLoading }: BasicInfoProps) => {
               ) : (
                 "Unknown User"
               ))}{" "}
-            <BadgeCheck className="text-sky-400" />
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger>
+                <BadgeCheck className="size-6 text-blue-400 ml-2" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <div>Phone number has been verified!</div>
+              </TooltipContent>
+            </Tooltip>
           </h1>
           <p className="font-bold font-profile-para text-xs text-white/50 uppercase mt-2">
             {profileData?.position ||
@@ -147,10 +165,10 @@ const BasicInfo = ({ profileData, isLoading }: BasicInfoProps) => {
             </div>
             <div className="flex justify-between mt-5 ">
               <address className="flex items-center text-xs gap-1 text-white/50 font-extralight">
-                <MapPin className="size-3.5 rotate-[9deg]" />
+                {!isLoading && <MapPin className="size-3.5 rotate-[9deg]" />}
                 {profileData?.address ||
                   (isLoading ? (
-                    <span className="animate-pulse bg-neutral-800 px-5 rounded" />
+                    <span className="animate-pulse bg-neutral-800 px-5 rounded w-48" />
                   ) : (
                     "-"
                   ))}

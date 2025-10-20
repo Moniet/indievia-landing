@@ -43,8 +43,6 @@ export const useClientProfile = () => {
   const { pathname } = useLocation();
   const { clientId } = useParams();
   const isDashboard = pathname.includes("/client/dashboard");
-  const setProfileUrl = useStore((s) => s.setUserProfileUrl);
-  const setFullName = useStore((s) => s.setFullName);
 
   const userId = isDashboard ? user?.data?.user?.id : clientId;
 
