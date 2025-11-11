@@ -61,5 +61,13 @@
             type="module"
         ></script>
         <script type="module" src="/src/main.tsx"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                setInterval(() => {
+                    const el = document.querySelector("#lovable-badge");
+                    el?.remove();
+                }, 1000);
+            });
+        </script>
     </body>
 </html>
