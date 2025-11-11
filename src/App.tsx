@@ -19,6 +19,7 @@ import PhoneVerification from "./pages/PhoneVerification";
 import { AdminPage } from "./pages/Admin/AdminPage";
 import { AdminSignInForm } from "./pages/SignIn/admin-signin-form";
 import AdminSignIn from "./pages/SignIn/AdminSignIn";
+import Sitemap from "./pages/Sitemap";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +50,7 @@ const App = () => (
           <Route path={"/auth/confirm"} element={<ConfirmAuth />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
+          <Route path="/sitemap.xml" element={<Sitemap />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
