@@ -1,7 +1,7 @@
 import Nav from "@/components/Nav";
-import { OTPForm } from "./OtpForm";
 import { PhoneNumber } from "./PhoneNumber";
 import { useState } from "react";
+import { OTPForm } from "./OTPForm";
 
 const PhoneVerification = () => {
   const [page, setPage] = useState(0);
