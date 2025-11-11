@@ -17,15 +17,26 @@ export type ProfessionalProfilePublicData = {
   twitter?: string | null;
   youtube?: string | null;
   profile_picture_url: string;
-  gallery: string[];
+  gallery?: string[];
+  phone_verified: boolean;
   referral_code: string;
   badge: string;
+  reviews_metadata: {
+    avg: string;
+    count: string;
+  };
   reviews: {
+    is_blocked: boolean;
     id: number;
+    reply_text?: string;
+    reply_id?: string;
     review: string;
     userId: string;
     rating: number;
+    created_at: string;
     gallery?: string[];
+    client_full_name?: string;
+    client_profile_picture?: string;
     client_id: string;
     client_profiles: {
       full_name: string;

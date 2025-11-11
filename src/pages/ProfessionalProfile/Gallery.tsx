@@ -8,7 +8,7 @@ import {
 } from "framer-motion";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Grid, Pagination } from "swiper/modules";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ImageOff } from "lucide-react";
 
 const Image = ({
   isHiding = false,
@@ -61,8 +61,25 @@ const Image = ({
 };
 
 type GalleryProps = {
-  profileData?: unknown;
+  profileData?: {
+    gallery?: string[];
+  };
   isLoading?: boolean;
+};
+
+const GallerySkeleton = () => {
+  return (
+    <div className="overflow-hidden">
+      <div className="grid gap-4 select-none grid-rows-[repeat(2,350px)] auto-cols-[350px] grid-flow-col">
+        {[...Array(6)].map((_, i) => (
+          <div
+            key={i}
+            className="w-[350px] h-[350px] animate-pulse bg-white/10 rounded-lg"
+          />
+        ))}
+      </div>
+    </div>
+  );
 };
 
 const Gallery = ({ profileData, isLoading }: GalleryProps) => {
@@ -79,6 +96,7 @@ const Gallery = ({ profileData, isLoading }: GalleryProps) => {
     const makeHandleSizeChange =
       (withTimeout = true) =>
       () => {
+        if (!ref.current) return;
         if (withTimeout) {
           clearTimeout(to);
           to = setTimeout(() => {
@@ -106,7 +124,23 @@ const Gallery = ({ profileData, isLoading }: GalleryProps) => {
     return () => {
       window.removeEventListener("resize", handleSizeChange, false);
     };
-  }, []);
+  }, [profileData]);
+
+  if (isLoading) {
+    return <GallerySkeleton />;
+  }
+
+  if (!profileData?.gallery || profileData.gallery.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center p-10 text-white/50 min-h-[350px]">
+        <ImageOff className="size-10 mb-4" />
+        <p className="text-lg">No images yet.</p>
+        <p className="text-sm mt-1">
+          This professional hasn't uploaded any images to their gallery.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div>

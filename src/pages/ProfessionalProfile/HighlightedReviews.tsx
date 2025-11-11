@@ -8,7 +8,7 @@ const ReviewItem = ({
   client_profiles,
 }: ProfessionalProfilePublicData["reviews"][0]) => {
   return (
-    <div className="max-w-[500px] backdrop-blur bg-[#0b0b0b]/50 text-white min-w-[500px] min-h-[200px] h-full rounded-xl border border-white/20 border-t-0 p-4 pb-7 flex flex-col">
+    <div className="min-w-[280px] sm:min-w-[400px] lg:max-w-[500px] backdrop-blur bg-[#0b0b0b]/50 text-white lg:min-w-[500px] min-h-[200px] h-full rounded-xl border border-white/20 border-t-0 p-4 pb-7 flex flex-col">
       <div className="flex-1">
         <div className="flex gap-1 ">
           <RatingStars rating={rating} totalRatingValue={5} />
@@ -33,10 +33,39 @@ const ReviewItem = ({
         <img
           className="w-[40px] h-[40px] rounded-xl object-cover"
           alt=""
-          src={client_profiles.profile_picture_url}
+          src={client_profiles?.profile_picture_url}
         />
         <div className="text-sm font-profile-header">
-          {client_profiles.full_name}
+          {client_profiles?.full_name}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Skeleton component for a single review item
+const ReviewItemSkeleton = () => {
+  return (
+    <div className="w-full max-w-[500px] min-w-[220px] sm:min-w-[340px] md:min-w-[400px] lg:min-w-[500px] min-h-[160px] sm:min-h-[180px] md:min-h-[200px] h-full backdrop-blur bg-[#0b0b0b]/50 text-white rounded-xl border border-white/20 border-t-0 p-4 pb-7 flex flex-col animate-pulse">
+      <div className="flex-1">
+        <div className="flex gap-1 mb-2">
+          <div className="w-16 sm:w-24 h-4 bg-gray-700 rounded" />{" "}
+          {/* Rating stars */}
+        </div>
+        <div className="h-[40px] sm:h-[50px] -mb-5 -ml-3" />{" "}
+        {/* Placeholder for quote icon */}
+        <div className="space-y-2">
+          <div className="h-4 bg-gray-700 rounded w-10/12 sm:w-11/12" />
+          <div className="h-4 bg-gray-700 rounded w-full" />
+          <div className="h-4 bg-gray-700 rounded w-8/12 sm:w-10/12" />
+        </div>
+      </div>
+      <div className="pt-3 mt-5 border-t border-t-white/10 flex items-start gap-3">
+        <div className="w-[32px] h-[32px] sm:w-[40px] sm:h-[40px] rounded-xl bg-gray-700" />
+        {/* Profile picture */}
+        <div className="text-sm font-profile-header flex-1">
+          <div className="h-4 bg-gray-700 rounded w-20 sm:w-32" />{" "}
+          {/* Client name */}
         </div>
       </div>
     </div>
@@ -53,15 +82,43 @@ const HighlightedReviews = ({
   isLoading,
 }: HighlightedReviewsProps) => {
   const reviews = profileData?.reviews;
+
+  const renderContent = () => {
+    if (isLoading) {
+      // Render 3 skeleton items when loading
+      return (
+        <>
+          {[...Array(3)].map((_, i) => (
+            <ReviewItemSkeleton key={i} />
+          ))}
+        </>
+      );
+    }
+
+    if (!reviews || reviews.length === 0) {
+      // Render empty state if no reviews and not loading
+      return (
+        <div className="flex flex-col items-center justify-center p-10 text-white/50 min-h-[200px] min-w-[500px]">
+          <Quote className="size-10 mb-4" />
+          <p className="text-lg">No reviews yet.</p>
+          <p className="text-sm mt-1">Be the first to leave a review!</p>
+        </div>
+      );
+    }
+
+    // Render actual reviews
+    return reviews
+      .slice(0, 10)
+      .map((review, i) => <ReviewItem {...review} key={review.id} />);
+  };
+
   return (
     <div className="overflow-hidden w-full h-fit relative py-10">
       <div className="h-[200px] overflow-hidden  blur-xl absolute top-0 left-1/2 -translate-x-1/2">
         <div className=" bg-brand/25 rounded-full  w-[650px] h-[400px] -translate-y-1/2" />
       </div>
       <div className="flex items-center max-w-full   h-fit overflow-y-hidden overflow-x-scroll hide-scrollbar gap-10 relative scrollbar-none">
-        {reviews?.slice(0, 10).map((review, i) => (
-          <ReviewItem {...review} key={review.id} />
-        ))}
+        {renderContent()}
       </div>
       <div className="absolute top-0 right-0 w-[50px] h-full bg-gradient-to-r from-transparent to-[#0b0b0b] " />
     </div>

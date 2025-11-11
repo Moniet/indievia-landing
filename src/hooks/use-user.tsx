@@ -8,15 +8,27 @@ const fetchUser = () => supabase.auth.getUser();
 const useUser = () => {
   const {
     data: user,
-    error,
     isLoading,
+    ...rest
   } = useQuery({
     queryKey: ["user"],
     queryFn: fetchUser,
     staleTime: 10 * 60 * 1000,
   });
 
-  return [{ user, error }, isLoading] as const;
+  useEffect(() => {
+    const sub = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_OUT") {
+        rest.refetch();
+      }
+    });
+
+    return () => {
+      sub.data.subscription.unsubscribe();
+    };
+  }, []);
+
+  return [{ user, ...rest }, isLoading] as const;
 };
 
 export default useUser;

@@ -10,6 +10,13 @@ import Donut from "./Donut";
 import { useProfessionalProfile } from "@/hooks/use-professional-profile";
 import { useRecentReferrals } from "@/hooks/use-referrals";
 import ReferralsSkeleton from "./Skeleton/Skeleton";
+import { useProfile } from "@/hooks/use-profile";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from "@/components/ui/empty";
 
 const BadgeDonut = ({
   src,
@@ -75,15 +82,16 @@ export const badges = [
 ];
 
 const Referrals = () => {
-  const [{ profileData, isLoading: profileIsLoading }] =
-    useProfessionalProfile();
   const [copied, setCopied] = useState(false);
-  const { referrals, isLoading: referralsIsLoading } = useRecentReferrals();
+  const [{ profileData }, profileIsLoading] = useProfessionalProfile();
+  const { referrals = [], isLoading: referralsIsLoading } =
+    useRecentReferrals();
 
   const isLoading = profileIsLoading || referralsIsLoading;
 
   const referralCode = profileData?.referral_code;
   const referralCount = profileData?.referral_count || 0;
+  console.log({ profileData });
 
   const badgesWithProgress = badges.map((badge) => ({
     ...badge,
@@ -110,14 +118,30 @@ const Referrals = () => {
     return <ReferralsSkeleton />;
   }
 
-  return (
-    <div className="size-full">
-      <div className="text-xl font-medium text-white">Referrals</div>
+  const formatRefDate = (createdAt: string | undefined) => {
+    if (!createdAt) return "";
+    const date = new Date(createdAt);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
+    if (diffDays === 0) {
+      return "Today";
+    } else if (diffDays < 30) {
+      return `${diffDays} day${diffDays === 1 ? "" : "s"} ago`;
+    } else {
+      const diffMonths = Math.floor(diffDays / 30);
+      return `${diffMonths} month${diffMonths === 1 ? "" : "s"} ago`;
+    }
+  };
+
+  return (
+    <div className="size-full overflow-x-hidden">
+      <div className="text-xl font-medium text-white">Referrals</div>
       <div className="mt-10" />
-      <div className="p-7 rounded-lg border border-white/5 bg-[#18181A]">
-        <div className="flex gap-7">
-          <div className="w-fit h-fit rounded-full bg-zinc-800 relative">
+      <div className="p-4 sm:p-7 rounded-lg border border-white/5 bg-[#18181A]">
+        <div className="flex flex-col sm:flex-row gap-5 sm:gap-7">
+          <div className="w-fit h-fit rounded-full bg-zinc-800 relative mx-auto sm:mx-0 mb-3 sm:mb-0">
             <BadgeDonut
               src={badgesWithProgress[0].src}
               progress={badgesWithProgress[0].progress}
@@ -125,16 +149,16 @@ const Referrals = () => {
           </div>
           <BadgeProgress />
         </div>
-        <div className="border-t mt-8 pt-6 border-zinc-800 w-full">
+        <div className="border-t mt-6 sm:mt-8 pt-4 sm:pt-6 border-zinc-800 w-full">
           <div className="w-fit">
             {referralCount < 20 && (
-              <div className="text-white/70 text-xs font-light mb-7 flex items-center">
+              <div className="text-white/70 max-md:hidden text-xs font-light mb-5 sm:mb-7 flex items-center">
                 <Info className="size-4 mr-3" /> Invite{" "}
                 {[3, 5, 10, 20].find((n) => n > referralCount) - referralCount}{" "}
                 more people to reach your next milestone
               </div>
             )}
-            <div className="bg-white/10 rounded-md pl-4  h-12 flex items-center uppercase">
+            <div className="bg-white/10 min-w-[250px] rounded-md pl-4 h-12 max-md:w-full flex items-center uppercase">
               <span>{referralCode}</span>
               <button
                 className="rounded-md bg-[#F38B6F] size-9 mr-1.5 flex items-center justify-center ml-auto"
@@ -152,9 +176,10 @@ const Referrals = () => {
           </div>
         </div>
       </div>
-      <div className="flex w-full gap-7 mt-7 items-stretch">
-        <div className="flex flex-col gap-7 flex-1">
-          <div className="flex gap-7 w-full">
+      {/* Responsive Flex: stack on mobile, row on lg+ */}
+      <div className="flex flex-col lg:flex-row flex-1 w-full gap-5 lg:gap-7 items-stretch mt-7">
+        <div className="flex flex-col gap-5 lg:gap-7 flex-1">
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-7 w-full">
             <div className="flex-1 border border-white/5 rounded-lg px-5 py-3 space-y-2 bg-[#18181A]">
               <div className="font-medium text-sm">No. badges earned</div>
               <div className="text-3xl font-medium">{earnedBadges.length}</div>
@@ -162,41 +187,56 @@ const Referrals = () => {
                 Level {earnedBadges.length + 1}
               </div>
             </div>
-            <div className="flex-1 border border-white/5 rounded-lg px-5 py-3 space-y-2 bg-[#18181A]">
+            <div className="flex-1 border border-white/5 rounded-lg px-5 py-3 space-y-2 bg-[#18181A] mt-4 sm:mt-0">
               <div className="font-medium text-sm">No. of referrals</div>
               <div className="text-3xl font-medium">{referralCount}</div>
               <div className="text-sm text-white/50">Referrals by you</div>
             </div>
           </div>
-          <div className="border border-white/5 rounded-lg p-5 bg-[#18181A] flex-1 flex flex-col">
+          <div className="border border-white/5 rounded-lg p-4 sm:p-5 bg-[#18181A] flex-1 flex flex-col">
             <div className="font-medium text-sm">Recently referrals</div>
-            <div className="flex flex-col gap-5 mt-7 flex-1 max-h-full overflow-y-auto">
-              {referrals?.data?.map((ref) => {
-                return (
-                  <div className="flex items-center gap-5" key={ref?.email}>
-                    <div className="flex gap-3 w-full">
-                      <img
-                        src=""
-                        alt=""
-                        className="bg-white/50 w-[40px] h-[40px] rounded-full"
-                      />
-                      <div>
-                        <div className="text-sm">
-                          {ref.fullName || "*<No Name Found*"}
+            <div className="flex flex-col gap-5 mt-5 sm:mt-7 flex-1 max-h-full overflow-y-auto">
+              {Array.isArray(referrals?.data) &&
+                referrals?.data?.map((ref) => {
+                  return (
+                    <div
+                      className="flex flex-col sm:flex-row items-start gap-2 sm:gap-5"
+                      key={ref?.email}
+                    >
+                      <div className="flex gap-3 w-full">
+                        <div>
+                          <div className="text-sm">
+                            {ref.fullName || "*<No Name Found*"}
+                          </div>
+                          <div className="text-sm font-light">{ref.email}</div>
                         </div>
-                        <div className="text-sm font-light">{ref.email}</div>
+                      </div>
+                      <div className="text-white text-sm whitespace-nowrap font-light text-white/70 mt-1 sm:mt-0">
+                        {formatRefDate(ref.createdAt)}
                       </div>
                     </div>
-                    <div className="text-white text-sm">Today</div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              {!referrals?.data && (
+                <div>
+                  <Empty className="border bg-white/5">
+                    <EmptyHeader>
+                      <Info />
+                      <EmptyTitle>No referrals found</EmptyTitle>
+                      <EmptyDescription>
+                        Share your referral code with customers and get featured
+                        on our homepage.
+                      </EmptyDescription>
+                    </EmptyHeader>
+                  </Empty>
+                </div>
+              )}
             </div>
           </div>
         </div>
-        <div className="flex flex-1">
-          <div className="border border-white/5 rounded-lg p-5 bg-[#18181A] flex-1">
-            <div className="flex items-baseline w-full justify-between">
+        <div className="flex flex-1 mt-5 lg:mt-0">
+          <div className="border border-white/5 rounded-lg p-4 sm:p-5 bg-[#18181A] flex-1">
+            <div className="flex flex-col sm:flex-row items-baseline w-full justify-between gap-3">
               <div className="text-lg">Badges</div>
               <Tooltip delayDuration={0}>
                 <TooltipTrigger>
@@ -212,7 +252,7 @@ const Referrals = () => {
                 </TooltipContent>
               </Tooltip>
             </div>
-            <div className="grid grid-cols-2 gap-x-10 gap-y-5 pt-5">
+            <div className="grid mt-5 grid-cols-2 gap-6 sm:gap-10 pt-5">
               {badgesWithProgress.map((badge) => (
                 <div
                   key={badge.name}

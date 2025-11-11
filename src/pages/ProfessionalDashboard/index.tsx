@@ -7,23 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { PropsWithChildren } from "react";
 import { Toaster } from "@/components/ui/sonner";
 
-const FadeInOut = ({ children, id }: PropsWithChildren<{ id: string }>) => {
-  return (
-    <AnimatePresence>
-      <motion.div
-        key={id}
-        exit={{ y: 20, opacity: 0 }}
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-      >
-        {children}
-      </motion.div>
-    </AnimatePresence>
-  );
-};
-
 const ProfessionalDashboard = () => {
-  const loc = useLocation();
   return (
     <div className="flex w-full h-full min-h-screen max-w-screen bg-[#191919]">
       <ProfessionalDashboardSidebar />

@@ -5,12 +5,15 @@ import { Check } from "lucide-react";
 export type ProfileForm = {
   email: string;
   fullName: string;
+  tags: string[];
   position: string;
-  address: string;
   bio: string;
   slug: string;
   website?: string;
   instagram?: string;
+  streetAddress?: string;
+  city?: string;
+  state?: string;
   facebook?: string;
   tiktok?: string;
   twitter?: string;
@@ -28,7 +31,10 @@ export async function saveProfile(profile: ProfileForm, userId: string) {
           email: profile.email,
           full_name: profile.fullName,
           position: profile.position,
-          address: profile.address,
+          tags: profile.tags,
+          street_address: profile.streetAddress,
+          city: profile.city,
+          state: profile.state,
           slug: profile.slug,
           bio: profile.bio,
           website: profile.website || null,

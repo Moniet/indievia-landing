@@ -51,8 +51,12 @@ export function SignupForm({
       });
 
       if (error || data?.error) {
+        const context = await error.context.json();
         setError(
-          error?.message || data?.error || "Sign up failed. Please try again.",
+          context?.message ||
+            error?.message ||
+            data?.error ||
+            "Sign up failed. Please try again.",
         );
       } else {
         setError("");
@@ -100,11 +104,11 @@ export function SignupForm({
   }, [user, verify]);
 
   return (
-    <div className="border border-neutral-800 rounded-lg p-7">
-      <div className="w-full h-12 bg-white/5 mb-5 rounded-lg flex items-center justify-center p-1">
+    <div className="border border-neutral-800 rounded-lg p-4 sm:p-6 md:p-7">
+      <div className="w-full h-10 sm:h-12 bg-white/5 mb-4 sm:mb-5 rounded-lg flex items-center justify-center p-1">
         <button
           onClick={() => setMode("client")}
-          className={`transition-colors duration-300 flex-1 cursor-pointer tracking-wide flex items-center justify-center rounded-sm h-full text-center text-sm ${
+          className={`transition-colors duration-300 flex-1 cursor-pointer tracking-wide flex items-center justify-center rounded-sm h-full text-center text-xs sm:text-sm px-2 sm:px-3 ${
             mode === "client" ? "bg-white/10 text-white" : ""
           }`}
         >
@@ -112,14 +116,14 @@ export function SignupForm({
         </button>
         <button
           onClick={() => setMode("pro")}
-          className={`transition-colors duration-300 flex-1 cursor-pointer tracking-wide flex items-center justify-center rounded-sm h-full text-center text-sm ${
+          className={`transition-colors duration-300 flex-1 cursor-pointer tracking-wide flex items-center justify-center rounded-sm h-full text-center text-xs sm:text-sm px-2 sm:px-3 ${
             mode === "pro" ? "bg-white/10 text-white" : ""
           }`}
         >
           Professional
         </button>
       </div>
-      <div className={cn("flex flex-col gap-6", className)} {...props}>
+      <div className={cn("flex flex-col gap-5 sm:gap-6", className)} {...props}>
         <form onSubmit={handleSignup}>
           <FieldGroup>
             <div className="flex flex-col items-center text-center">
@@ -129,7 +133,9 @@ export function SignupForm({
               >
                 <img src="/logo-with-text.png" className="w-24 mb-3" />
               </a>*/}
-              <h1 className="text-xl font-bold">Welcome to IndieVia</h1>
+              <h1 className="text-lg sm:text-xl font-bold">
+                Welcome to IndieVia
+              </h1>
               <FieldDescription>
                 Already signed up?{" "}
                 <Link to="/sign-in" className="hover:!text-orange-400">
@@ -176,7 +182,7 @@ export function SignupForm({
               <Button
                 disabled={loading || success || isLoadingUser}
                 type="submit"
-                className="bg-brand hover:bg-brand/80"
+                className="w-full sm:w-auto bg-brand hover:bg-brand/80"
               >
                 {loading && (
                   <Loader2 className="animate-spin duration-2000 size-4 mr-2" />
@@ -195,7 +201,7 @@ export function SignupForm({
             </AlertDescription>
           </Alert>
         )}
-        <FieldDescription className="px-6 text-center text-balance">
+        <FieldDescription className="px-4 sm:px-6 text-center text-balance">
           By clicking continue, you agree to our{" "}
           <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
         </FieldDescription>

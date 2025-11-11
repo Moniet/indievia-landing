@@ -4,9 +4,9 @@ import { ProfileNav } from "@/components/ProfileNav";
 
 export const Loading = () => {
   return (
-    <>
+    <div className="flex-col flex">
       <Layout>
-        <ProfileNav />
+        {/*<ProfileNav />*/}
         <div className="space-y-20 max-w-[750px] mx-auto">
           <div className="w-full h-full">
             <div className="flex w-full flex-col md:flex-row text-white justify-between gap-10 animate-pulse">
@@ -121,6 +121,6 @@ export const Loading = () => {
         </div>
       </Layout>
       <GlobalFooter />
-    </>
+    </div>
   );
 };

@@ -15,11 +15,16 @@ import {
   LucideBug,
   LucideMail,
   LucideSearch,
+  LucideNotepadText,
+  LucideNotebook,
+  User2,
+  UserCircle,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import useUser from "@/hooks/use-user";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
+import { UserNavItem } from "./UserNavItem";
 
 const Nav = () => {
   const location = useLocation();
@@ -39,12 +44,12 @@ const Nav = () => {
   };
 
   return (
-    <nav className="w-full h-[150px] flex items-center justify-between text-white">
+    <nav className="w-full max-md:flex-col max-md:py-8 gap-5 md:h-[150px] flex items-center justify-between text-white">
       <Link to="/">
         <h1 className="flex items-center">
           <img
             src="/indievia-text-logo.png"
-            className="w-[80px] md:w-[100px] h-auto mb-1"
+            className="w-[100px] h-auto mb-1"
           />
           <span className="opacity-0 w-0 h-0 absolute top-0 -left-[1000]">
             Indie-Via
@@ -63,8 +68,8 @@ const Nav = () => {
         </Link>
         <Link
           to="/about"
-          className={`font-light text-xs md:text-sm tracking-wide ${
-            isAbout ? "opacity-100" : "opacity-50"
+          className={`font-light text-xs md:text-sm hover:text-white tracking-wide ${
+            isAbout ? "!text-white" : "text-white/50"
           }`}
         >
           About IndieVia
@@ -72,77 +77,17 @@ const Nav = () => {
         {(!profile || profile.error) && (
           <Link
             to="/sign-in"
-            className={`font-light text-xs md:text-sm tracking-wide ${
-              isAbout ? "opacity-100" : "opacity-50"
-            }`}
+            className={`md:py-2 md:px-4 max-md:size-7 max-md:flex rounded-full bg-brand !text-white font-light text-xs md:text-sm tracking-wide`}
           >
-            Sign in
+            <div className="m-auto md:hidden">
+              <UserCircle className="size-4 text-amber-200 m-auto" />
+            </div>
+
+            <span className="max-md:hidden">Sign in</span>
           </Link>
         )}
 
-        {profile && !profile.error && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <div className="flex gap-8 items-center justify-between">
-                <div className="rounded-full bg-brand flex items-center justify-start w-fit py-[5px] px-[5px] pr-[5px]">
-                  <Avatar className="size-[30px]">
-                    <AvatarImage
-                      src={profile.data?.profile_picture_url || undefined}
-                      alt={profile?.data?.full_name || "User avatar"}
-                      className={
-                        profile.data?.profile_picture_url ? "" : "animate-pulse"
-                      }
-                    />
-                    <AvatarFallback>
-                      {profile?.data?.full_name?.[0]?.toUpperCase() || "U"}
-                    </AvatarFallback>
-                  </Avatar>
-
-                  <div className="flex items-center justify-center w-[30px]">
-                    <ChevronDown
-                      className="text-white size-3"
-                      strokeWidth={1.5}
-                    />
-                  </div>
-                </div>
-              </div>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align={"center"}>
-              <DropdownMenuItem asChild>
-                <Link
-                  to={
-                    userRole === "client"
-                      ? `/client/dashboard`
-                      : "/professional/dashboard"
-                  }
-                >
-                  <LucideUser className="size-4 mr-2" /> My Profile
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <LucideSearch className="size-4 mr-2" /> Search
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <LucideMail className="size-4 mr-2" /> Contact
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <LucideBug className="size-4 mr-2" /> Report Bugs
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="hover:!bg-red-600"
-                onClick={handleSignOut}
-                disabled={signingOut}
-              >
-                {signingOut ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <LucideArrowUpRightFromSquare className="size-4 mr-2" />
-                )}{" "}
-                Sign Out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
+        <UserNavItem profile={profile} />
       </div>
     </nav>
   );

@@ -10,7 +10,7 @@ const BadgeProgress = ({
   const progress = Math.min(1, (totalReferrals || 0) / 3) * 100;
 
   return (
-    <div className="w-full space-y-3">
+    <div className="w-full space-y-3 max-md:hidden">
       <div className="text-sm text-white/50">{currentBadge || ""}</div>
 
       <div className="text-lg font-medium">{fullName || "Name not found"}</div>
@@ -30,7 +30,7 @@ const BadgeProgress = ({
             <div className="size-5 rounded-full bg-white " />
             <div className="size-5 rounded-full bg-white" />
           </div>
-          <div className="flex justify-between w-full items-center absolute top-0 -translate-y-full -mt-3">
+          <div className="flex justify-between w-full items-center absolute top-0 -translate-y-3/4 -mt-3">
             <div />
             <img
               className="w-14 translate-x-1/3 pointer-events-none select-none"

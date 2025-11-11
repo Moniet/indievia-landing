@@ -3,7 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useStore } from "./use-store";
 
-const fetchProfile = () => supabase.functions.invoke("me", { method: "GET" });
+export const fetchProfile = () =>
+  supabase.functions.invoke("me", { method: "GET" });
 
 export const useProfile = () => {
   const { data, ...rest } = useQuery({

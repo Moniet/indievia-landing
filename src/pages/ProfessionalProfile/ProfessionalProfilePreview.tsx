@@ -55,6 +55,7 @@ const ProfessionalProfilePreview = ({
             />
             <Gallery profileData={profileData} isLoading={isLoading} />
             <Reviews
+              onClickViewMore={() => {}}
               isLoading={isLoading}
               reviews={reviews || []}
               mode={"professional-dashboard-public"}

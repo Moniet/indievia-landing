@@ -12,6 +12,7 @@ export type ProfessionalProfileData = {
   bio: string;
   slug: string;
   referral_count: number;
+  referral_code: string;
   badge: string;
   website?: string | null;
   instagram?: string | null;
@@ -21,6 +22,7 @@ export type ProfessionalProfileData = {
   youtube?: string | null;
   profile_picture_url?: string | null;
   current_badge?: string | null;
+  gallery: string[];
   created_at?: string;
   updated_at?: string;
 };
@@ -40,12 +42,15 @@ export const fetchProfessionalProfile = (userId: string) => async () => {
     .eq("user_id", userId)
     .single();
 
-  if (error) {
-    // Optionally: throw or handle error
-    return null;
-  }
+  // if (error) {
+  //   // Optionally: throw or handle error
+  //   return null;
+  // }
 
-  return { ...(data || {}), ...profile } as ProfessionalProfileData;
+  return {
+    ...(data || {}),
+    ...(profile ? profile : {}),
+  } as ProfessionalProfileData;
 };
 
 export const useProfessionalProfile = () => {

@@ -4,6 +4,7 @@ import useUser from "./use-user";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useProfile } from "./use-profile";
+import { late } from "zod";
 
 export type Review = {
   id: string;
@@ -163,11 +164,8 @@ export const fetchClientReviewsPage = async ({
  * - Also supports `nextPage` and `hasMore` hints if provided by the edge function.
  */
 export const useClientReviews = () => {
-  const [{ user }] = useUser();
   const { clientId } = useParams();
-
-  const id: string | undefined =
-    clientId && clientId !== "dashboard" ? clientId : user?.data?.user?.id;
+  const id: string | undefined = clientId ? clientId : "dashboard";
 
   const { data, ...rest } = useInfiniteQuery({
     queryKey: ["client-reviews", { id }],
@@ -175,11 +173,11 @@ export const useClientReviews = () => {
     initialPageParam: 1 as number,
     queryFn: fetchClientReviewsPage,
     getNextPageParam: (lastPage, allPages) => {
-      if (lastPage.data?.length >= lastPage.data?.count) {
-        return;
+      if (allPages.length < Math.ceil((lastPage.data?.count || 0) / 5)) {
+        return allPages.length + 1;
       }
 
-      return allPages.length + 1;
+      return undefined;
     },
   });
 

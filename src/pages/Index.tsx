@@ -19,6 +19,12 @@ import { toast } from "sonner";
 import Layout from "@/components/Layout";
 import Nav from "@/components/Nav";
 import { Link } from "react-router-dom";
+import { SearchInput } from "./Search/Search";
+import { FeaturedArtists } from "./Landing/FeaturedArtists";
+import GlobalFooter from "@/components/Footer";
+import { InfoSection } from "./Landing/InfoSection";
+import { RecentReviews } from "./Landing/RecentReviews";
+import { LandingAbout } from "./Landing/LandingAbout";
 
 const ArrowRight = () => {
   return (
@@ -234,69 +240,6 @@ const useSubscribe = ({
   };
 };
 
-const ImageAutoScrollSection = () => {
-  return (
-    <section>
-      <div className="w-screen overflow-hidden">
-        <div className="flex items-center overflow-hidden w-[300vw] mt-40">
-          <div className="animate-auto-scroll w-fit flex gap-5 min-w-fit">
-            <img
-              src="/hero-circle-1.png"
-              className="h-[200px] sm:h-[250px] w-auto"
-            />
-            <img
-              src="/hero-circle-2.png"
-              className="h-[200px] sm:h-[250px] w-auto"
-            />
-            <img
-              src="/hero-circle-3.png"
-              className="h-[200px] sm:h-[250px] w-auto"
-            />
-            <img
-              src="/hero-circle-4.png"
-              className="h-[200px] sm:h-[250px] w-auto"
-            />
-            <img
-              src="/hero-circle-5.png"
-              className="h-[200px] sm:h-[250px] w-auto"
-            />
-            <img
-              src="/hero-circle-6.png"
-              className="h-[200px] sm:h-[250px] w-auto"
-            />
-          </div>
-          <div className="animate-auto-scroll w-fit flex gap-5 min-w-fit">
-            <img
-              src="/hero-circle-1.png"
-              className="h-[200px] sm:h-[250px] w-auto"
-            />
-            <img
-              src="/hero-circle-2.png"
-              className="h-[200px] sm:h-[250px] w-auto"
-            />
-            <img
-              src="/hero-circle-3.png"
-              className="h-[200px] sm:h-[250px] w-auto"
-            />
-            <img
-              src="/hero-circle-4.png"
-              className="h-[200px] sm:h-[250px] w-auto"
-            />
-            <img
-              src="/hero-circle-5.png"
-              className="h-[200px] sm:h-[250px] w-auto"
-            />
-            <img
-              src="/hero-circle-6.png"
-              className="h-[200px] sm:h-[250px] w-auto"
-            />
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-};
-
 const MasonryLayout = () => {
   return (
     <div className="flex flex-col gap-5 mt-40 flex-wrap">
@@ -308,24 +251,24 @@ const MasonryLayout = () => {
               style={{ boxShadow: "0 0 8px rgba(255,255,255,0.1)" }}
             />
             <div
-              className="bg-white/30 top-0 left-0 absolute w-full h-full rounded-md rotate-[2deg] ml-1"
+              className="bg-white/30 top-0 left-0 absolute w-full rounded-md rotate-[2deg] ml-1"
               style={{ boxShadow: "0 0 8px rgba(255,255,255,0.2)" }}
             />
             <div
-              className="w-full h-full bg-[#FFFDFA] rounded-md -rotate-[1deg] p-2"
+              className="w-full h-full min-h-fit bg-[#FFFDFA] rounded-md -rotate-[1deg] p-2"
               style={{ boxShadow: "0 0 8px rgba(255,255,255,0.5)" }}
             >
               <div className="h-fit rounded-lg overflow-hidden w-full">
                 <img
-                  src="/picture-of-woman.jpg"
+                  src="/bento-picture-of-woman.png"
                   className="w-full h-auto lg:scale-[1.06] [transform-origin:center_center]"
                 />
               </div>
               <div className="text-black text-sm mt-2">
-                Brianna Johnson | 146 reviews
+                Gaby M. | 146 reviews
               </div>
               <div className="text-sm mt-1 text-[#8b8b8b] font-light">
-                Tattoo Artist
+                Tattoo Artist - Tampa, FL
               </div>
               <p className="text-xs font-extralight text-black mt-1">
                 Bri really took the time to understand what I wanted and super
@@ -698,47 +641,7 @@ const Footer = ({
 };
 
 const Index: React.FC = () => {
-  const [mode, setMode] = useState<"professional" | "client">("professional");
-  const [heroPrefillEmail, setHeroPrefillEmail] = useState("");
-  const [subscriberCount, setSubscriberCount] = useState<number | null>(null);
-
-  // Fetch the current subscriber count from the API
-  const fetchSubscriberCount = useCallback(async () => {
-    try {
-      const res = await fetch(
-        "https://mfebhamkxngghywfgfac.supabase.co/functions/v1/smart-api",
-      );
-      if (res.ok) {
-        const json = await res.json();
-        if (typeof json.count === "number") {
-          setSubscriberCount(json.count);
-        }
-      }
-    } catch (e) {
-      // optionally handle error
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchSubscriberCount();
-  }, [fetchSubscriberCount]);
-
-  // Handles scroll and fires a CustomEvent for Footer form email prefill
-  const setPrefillEmailAndScroll = (email: string) => {
-    setHeroPrefillEmail(email);
-    setTimeout(() => {
-      const target = document.getElementById("early-access-form");
-      if (target) {
-        target.scrollIntoView({ behavior: "smooth", block: "center" });
-        // Dispatch event for any listener (Footer/useSubscribe)
-        setTimeout(() => {
-          window.dispatchEvent(
-            new CustomEvent("prefill-footer-email", { detail: { email } }),
-          );
-        }, 200);
-      }
-    }, 50);
-  };
+  const [hideElements, setHideElements] = useState(false);
 
   return (
     <div className="w-full max-w-[1440px] max-auto overflow-hidden text-white">
@@ -747,75 +650,31 @@ const Index: React.FC = () => {
       </Layout>
       <main>
         <Layout>
-          <div className="flex items-center border border-zinc-100/20 rounded-full w-fit p-[5px] mx-auto mt-20 ">
-            <div className="relative w-fit h-fit">
-              {mode === "professional" && (
-                <motion.div
-                  layoutId="switch-swatch"
-                  className="absolute top-0 left-0 w-full h-full bg-[#B8633F] rounded-full z-1"
-                />
-              )}
-              <button
-                className={`text-white p-2 px-4 text-sm tracking-wide font-light  transition-colors rounded-full relative z-10`}
-                onClick={() => setMode("professional")}
-              >
-                {"I'm a Professional"}
-              </button>
-            </div>
-            <div className="relative w-fit h-fit">
-              {mode === "client" && (
-                <motion.div
-                  layoutId="switch-swatch"
-                  className="absolute top-0 left-0 w-full h-full bg-[#B8633F] rounded-full z-1"
-                />
-              )}
-              <button
-                onClick={() => setMode("client")}
-                className={`text-white p-2 px-4 text-sm tracking-wide font-light transition-colors  rounded-full relative z-10`}
-              >
-                {"I'm a Client"}
-              </button>
-            </div>
-          </div>
-          <h2
-            className="text-4xl sm:text-5xl text-white text-center font-extralight mt-10 w-full flex items-center justify-center"
-            style={{ fontFamily: "Scope One, mono" }}
-          >
+          {/*<div className="flex items-center border border-zinc-100/20 rounded-full w-fit p-[5px] mx-auto mt-20 "></div>*/}
+          <h2 className="font-profile-header lg:text-4xl font-medium text-xl sm:text-2xl text-white text-center mt-10 w-full flex items-center justify-center">
             <AnimatePresence initial={false} mode="popLayout">
-              {mode === "professional" && (
+              {
                 <motion.span
                   exit={{ opacity: 0, filter: "blur(5px)" }}
                   initial={{ opacity: 0, filter: "blur(5px)" }}
                   animate={{ opacity: 1, filter: "blur(0px)" }}
                   transition={{ duration: 1 }}
+                  className="text-balance w-full sm:w-2/3 xl:w-1/2"
                 >
-                  Less research.
-                  <br /> More results
+                  Discover, Review &amp; Book Trusted Tattoo Artists
                 </motion.span>
-              )}
-            </AnimatePresence>
-            <AnimatePresence initial={false} mode="popLayout">
-              {mode === "client" && (
-                <motion.span
-                  exit={{ opacity: 0, filter: "blur(5px)" }}
-                  initial={{ opacity: 0, filter: "blur(5px)" }}
-                  animate={{ opacity: 1, filter: "blur(0px)" }}
-                  transition={{ duration: 1 }}
-                >
-                  Discover Trusted Tattoo {"&"}
-                  <br /> Body Piercing Professionals Near You
-                </motion.span>
-              )}
+              }
             </AnimatePresence>
           </h2>
           <motion.p
             layout="position"
             transition={{ duration: 1 }}
-            className="max-sm:text-sm font-sm max-w-[600px] font-extralight text-balance text-white text-center mt-10 mx-auto"
+            className="max-sm:text-sm font-sm max-w-[600px] font-extralight text-balance text-white text-center mt-2 mx-auto"
           >
             <AnimatePresence initial={false} mode="popLayout">
-              {mode === "professional" && (
+              {
                 <motion.span
+                  className="max-md:text-white/70"
                   exit={{ opacity: 0, filter: "blur(5px)" }}
                   initial={{ opacity: 0, filter: "blur(5px)" }}
                   animate={{ opacity: 1, filter: "blur(0px)" }}
@@ -825,33 +684,37 @@ const Index: React.FC = () => {
                   the body piercing and tattooing industry without any
                   commitments and the endless scrolling.{" "}
                 </motion.span>
-              )}
-            </AnimatePresence>
-            <AnimatePresence initial={false} mode="popLayout">
-              {mode === "client" && (
-                <motion.span
-                  exit={{ opacity: 0, filter: "blur(5px)" }}
-                  initial={{ opacity: 0, filter: "blur(5px)" }}
-                  animate={{ opacity: 1, filter: "blur(0px)" }}
-                  transition={{ duration: 1 }}
-                >
-                  Real reviews. Independent artists. No booking hassles—just the
-                  best in your city!
-                </motion.span>
-              )}
+              }
             </AnimatePresence>
           </motion.p>
-          <div className="flex flex-col items-start justify-center gap-5 w-fit mx-auto mt-10">
+          {/*<div className="flex flex-col items-start justify-center gap-5 w-fit mx-auto mt-10">
             <Hero
               prefillEmail={heroPrefillEmail}
               setPrefillEmailAndScroll={setPrefillEmailAndScroll}
               subscriberCount={subscriberCount}
             />
-          </div>
+          </div>*/}
+          <div className="mt-10" />
+          <SearchInput
+            onSearch={() => setHideElements(true)}
+            onClear={() => setHideElements(false)}
+          />
+          <AnimatePresence>
+            {!hideElements && (
+              <motion.div exit={{ opacity: 0, y: 20 }}>
+                <FeaturedArtists />
+                <div className="mt-40" />
+                <RecentReviews />
+                <div className="mt-40" />
+                <LandingAbout />
+                <InfoSection />
+                <MasonryLayout />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </Layout>
 
-        <ImageAutoScrollSection />
-        <Layout>
+        {/*<Layout>
           <section className="w-full mt-40">
             <div className="flex justify-between flex-wrap gap-16">
               <div className="flex flex-col">
@@ -860,13 +723,10 @@ const Index: React.FC = () => {
                     Why join now
                   </h1>
                   <p className=" max-sm:text-sm font-extralight text-[#8e8e8e] max-w-[500px] mt-5">
-                    {mode === "professional" &&
-                      `Becoming an early member of our platform means more than
+                    {`Becoming an early member of our platform means more than
                     just getting listed — it’s a chance to grow with a community
                     that’s built around your needs as an independent
                     professional.`}
-                    {mode === "client" &&
-                      `Be among the first to shape this community. Early members get exclusive access and updates.`}
                   </p>
                   <p className="max-sm:text-sm  font-extralight text-[#8e8e8e] max-w-[500px] mt-3">
                     {`We’re building IndieVia with input from tattoo enthusiasts and professionals. Your feedback will directly influence the tools and features we prioritize next.`}
@@ -902,186 +762,11 @@ const Index: React.FC = () => {
               </div>
             </div>
           </section>
-          <section>
-            <AnimatePresence initial={false}>
-              {mode === "professional" && (
-                <motion.article
-                  className="mt-32 md:mt-20"
-                  exit={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                >
-                  <h1 className="text-2xl text-white font-light">
-                    Your talent deserves more eyes
-                  </h1>
-                  <p className=" max-sm:text-sm font-extralight text-[#8e8e8e] max-w-[500px] mt-5">
-                    Join <b className="text-white font-light">IndieVia</b>, the
-                    only review-based platform for professionals within the body
-                    piercing and tattooing industry with no booking sign-up
-                    required. Think Yelp, but for individual professionals.
-                    Create your profile and get discovered faster!
-                  </p>
-                </motion.article>
-              )}
-            </AnimatePresence>
-
-            <div className="flex gap-5 lg:gap-7 mt-12 flex-wrap">
-              <article className="flex flex-1 p-4 min-[500px]:max-w-[300px] min-w-[200px] flex-col rounded-lg bg-[#131313]">
-                <div className="w-full h-[180px]  px-4 md:px-0 xl:px-6 2xl:px-8 flex items-center justify-center">
-                  <svg
-                    className="max-sm:max-h-[100px]"
-                    viewBox="0 0 185 93"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <circle
-                      cx="46.1934"
-                      cy="46.1973"
-                      r="46.1934"
-                      fill="#282828"
-                    />
-                    <path
-                      d="M92.3887 0C98.4549 0 104.462 1.19483 110.066 3.51626C115.671 5.83769 120.763 9.24027 125.052 13.5297C129.342 17.8192 132.744 22.9115 135.066 28.5159C137.387 34.1204 138.582 40.1272 138.582 46.1934C138.582 52.2596 137.387 58.2664 135.066 63.8708C132.744 69.4752 129.342 74.5675 125.052 78.857C120.763 83.1464 115.671 86.549 110.066 88.8705C104.462 91.1919 98.4549 92.3867 92.3887 92.3867L92.3887 46.1934V0Z"
-                      fill="#282828"
-                    />
-                    <path
-                      d="M138.584 0C144.65 0 150.657 1.19483 156.261 3.51626C161.866 5.83769 166.958 9.24027 171.248 13.5297C175.537 17.8192 178.94 22.9115 181.261 28.5159C183.583 34.1204 184.777 40.1272 184.777 46.1934C184.777 52.2596 183.583 58.2664 181.261 63.8708C178.94 69.4752 175.537 74.5675 171.248 78.857C166.958 83.1464 161.866 86.549 156.261 88.8705C150.657 91.1919 144.65 92.3867 138.584 92.3867L138.584 46.1934V0Z"
-                      fill="#282828"
-                    />
-                  </svg>
-                </div>
-                <h1 className="text-sm sm:text-base font-light text-white ">
-                  Free profile creation
-                </h1>
-                <p className="font-extralight text-[#8e8e8e] text-xs sm:text-sm mt-2">
-                  {mode === "professional" &&
-                    `Set up a professional profile that reflects your services, and
-                    personality.`}
-                  {mode === "client" &&
-                    `Set up a reviewer profile with a bio & profile-picture that reflects
-                    personality.`}
-                </p>
-              </article>
-              <article className="flex flex-1 p-4 min-[500px]:max-w-[300px] min-w-[200px] flex-col rounded-lg bg-[#131313] lg:scale-[1.06]">
-                <div className="w-full h-[180px]  px-4 md:px-0 xl:px-6 2xl:px-8 flex items-center justify-center">
-                  <svg
-                    className="max-sm:max-h-[100px]"
-                    viewBox="0 0 200 93"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M0 53.5938C4.15737e-05 46.5559 1.38686 39.5871 4.08008 33.085C6.7734 26.5827 10.7207 20.6739 15.6973 15.6973C20.6739 10.7206 26.5827 6.77343 33.085 4.08008C39.5873 1.38672 46.5567 -3.07644e-07 53.5947 0C60.6326 4.15743e-05 67.6013 1.38682 74.1035 4.08008C80.6058 6.77343 86.5145 10.7206 91.4912 15.6973C96.4679 20.6739 100.415 26.5826 103.108 33.085C105.802 39.5871 107.188 46.5559 107.188 53.5938L0 53.5938ZM0 92.3896V53.6055L107.188 53.6055V92.3896H0Z"
-                      fill="#282828"
-                    />
-                    <path
-                      d="M153.384 92.39C147.318 92.39 141.311 91.1951 135.706 88.8736C130.101 86.5521 125.009 83.1494 120.719 78.8598C116.43 74.5702 113.027 69.4777 110.705 63.8731C108.384 58.2684 107.189 52.2614 107.189 46.195C107.189 40.1286 108.384 34.1216 110.705 28.5169C113.027 22.9123 116.43 17.8198 120.719 13.5302C125.009 9.2406 130.101 5.8379 135.706 3.51638C141.311 1.19487 147.318 -5.30343e-07 153.384 0L153.384 46.195V92.39Z"
-                      fill="#282828"
-                    />
-                  </svg>
-                </div>
-                <h1 className="text-sm sm:text-base font-light text-white ">
-                  {mode === "professional" && "Discovered by style/ speciality"}
-                  {mode === "client" && "Discovered artists in your locale"}
-                </h1>
-                <p className="font-extralight text-[#8e8e8e] text-xs sm:text-sm mt-2">
-                  {mode === "professional" &&
-                    `Be seen by people in your city actively looking for tattoo and
-                  body piercing professionals. No need to chase algorithms or pay for
-                  ads.`}
-                  {mode === "client" &&
-                    "Discover top tattoo artists in your city or show your support by dropping a review."}
-                </p>
-              </article>
-              <article className="flex flex-1 p-4 min-[500px]:max-w-[300px] min-w-[200px] flex-col rounded-lg bg-[#131313]">
-                <div className="w-full h-[180px]  px-4 md:px-0 xl:px-6 2xl:px-8 flex items-center justify-center">
-                  <svg
-                    className="max-sm:max-h-[100px]"
-                    viewBox="0 0 175 94"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <circle
-                      cx="92.7844"
-                      cy="47.0856"
-                      r="46.195"
-                      fill="#282828"
-                    />
-                    <path
-                      d="M46.5897 93.2806C40.5233 93.2806 34.5162 92.0858 28.9116 89.7642C23.307 87.4427 18.2145 84.04 13.9249 79.7504C9.63527 75.4608 6.23257 70.3683 3.91106 64.7637C1.58954 59.159 0.394669 53.152 0.394669 47.0856C0.394669 41.0192 1.58954 35.0122 3.91106 29.4076C6.23257 23.8029 9.63527 18.7104 13.9249 14.4208C18.2145 10.1312 23.307 6.72852 28.9116 4.40701C34.5162 2.08549 40.5233 0.890624 46.5897 0.890625L46.5897 47.0856V93.2806Z"
-                      fill="#282828"
-                    />
-                    <rect
-                      x="138.98"
-                      y="0.890625"
-                      width="35.3906"
-                      height="92.39"
-                      fill="#282828"
-                    />
-                  </svg>
-                </div>
-                <h1 className="text-sm sm:text-base font-light text-white ">
-                  Connect your socials
-                </h1>
-                <p className="font-extralight text-[#8e8e8e] text-xs sm:text-sm mt-2">
-                  {mode === "professional" &&
-                    `Invite your past clients to leave honest, verified reviews.
-                    Real feedback that helps you stand out.`}
-                  {mode === "client" &&
-                    `We enable you to share reviews straight to social media or use images from instagram in your reviews!`}
-                </p>
-              </article>
-
-              <article className="flex flex-1 p-4 min-[500px]:max-w-[300px] min-w-[200px] flex-col rounded-lg bg-[#131313] lg:scale-[1.06]">
-                <div className="w-full h-[180px]  px-4 md:px-0 xl:px-6 2xl:px-8 flex items-center justify-center">
-                  <svg
-                    className="max-sm:max-h-[100px]"
-                    viewBox="0 0 175 93"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <circle
-                      cx="128.293"
-                      cy="46.5856"
-                      r="46.195"
-                      fill="#282828"
-                    />
-                    <path
-                      d="M46.7073 92.7806C40.6409 92.7806 34.6339 91.5858 29.0293 89.2642C23.4246 86.9427 18.3321 83.54 14.0425 79.2504C9.75294 74.9608 6.35024 69.8683 4.02873 64.2637C1.70721 58.659 0.512344 52.652 0.512344 46.5856C0.512344 40.5192 1.70721 34.5122 4.02873 28.9076C6.35025 23.3029 9.75294 18.2104 14.0425 13.9208C18.3322 9.63122 23.4247 6.22852 29.0293 3.90701C34.6339 1.58549 40.6409 0.390624 46.7073 0.390625L46.7073 46.5856V92.7806Z"
-                      fill="#282828"
-                    />
-                    <rect
-                      x="46.707"
-                      y="0.390625"
-                      width="35.3906"
-                      height="92.39"
-                      fill="#282828"
-                    />
-                  </svg>
-                </div>
-                <h1 className="text-sm sm:text-base font-light text-white ">
-                  {mode === "professional" && "No bookings required"}
-                  {mode === "client" && "Make bookings directly"}
-                </h1>
-                <p className="font-extralight text-[#8e8e8e] text-xs sm:text-sm mt-2">
-                  {mode === "professional" &&
-                    `We’re not a scheduling platform, which means you stay in
-                  control. Clients find you, explore your work, and reach out
-                  directly.`}
-                  {mode === "client" &&
-                    `Explore and book appointments directly with tattoo artists / body piercing specialists.`}
-                </p>
-              </article>
-            </div>
-          </section>
           <MasonryLayout />
-        </Layout>
+        </Layout>*/}
       </main>
       <Layout>
-        <Footer
-          prefillEmail={heroPrefillEmail}
-          mode={mode}
-          onAfterSubscribe={fetchSubscriberCount}
-        />
+        <GlobalFooter />
       </Layout>
       <Toaster />
     </div>

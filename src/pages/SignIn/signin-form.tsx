@@ -64,26 +64,31 @@ export function SignInForm({
   };
 
   return (
-    <div className="border border-neutral-800 rounded-lg p-7">
-      <div className="w-full h-12 bg-white/5 mb-5 rounded-lg flex items-center justify-center p-1">
+    <div className="border border-neutral-800 rounded-lg p-4 sm:p-6 md:p-7">
+      <div className="w-full h-10 sm:h-12 bg-white/5 mb-4 sm:mb-5 rounded-lg flex items-center justify-center p-1">
         <button
           onClick={() => setMode("client")}
-          className={`transition-colors duration-300 flex-1 cursor-pointer tracking-wide flex items-center justify-center rounded-sm h-full text-center text-sm ${mode === "client" ? "bg-white/10 text-white" : ""}`}
+          className={`transition-colors duration-300 flex-1 cursor-pointer tracking-wide flex items-center justify-center rounded-sm h-full text-center text-xs sm:text-sm px-2 sm:px-3 ${mode === "client" ? "bg-white/10 text-white" : ""}`}
         >
           Client
         </button>
         <button
           onClick={() => setMode("pro")}
-          className={`transition-colors duration-300 flex-1 cursor-pointer tracking-wide flex items-center justify-center rounded-sm h-full text-center text-sm ${mode === "pro" ? "bg-white/10 text-white" : ""}`}
+          className={`transition-colors duration-300 flex-1 cursor-pointer tracking-wide flex items-center justify-center rounded-sm h-full text-center text-xs sm:text-sm px-2 sm:px-3 ${mode === "pro" ? "bg-white/10 text-white" : ""}`}
         >
           Professional
         </button>
       </div>
-      <div className={cn("mt-7 flex flex-col gap-6", className)} {...props}>
+      <div
+        className={cn("mt-6 sm:mt-7 flex flex-col gap-5 sm:gap-6", className)}
+        {...props}
+      >
         <form onSubmit={handleSignup}>
           <FieldGroup>
             <div className="flex flex-col items-center gap-2 text-center">
-              <h1 className="text-xl font-bold">Welcome to IndieVia</h1>
+              <h1 className="text-lg sm:text-xl font-bold">
+                Welcome to IndieVia
+              </h1>
               <FieldDescription className="text-prety">
                 Enter your email and we'll send a magic link to sign in. If you
                 don't have an account,{" "}
@@ -108,7 +113,7 @@ export function SignInForm({
               <Button
                 disabled={loading}
                 type="submit"
-                className="bg-brand hover:bg-brand/80"
+                className="w-full sm:w-auto bg-brand hover:bg-brand/80"
               >
                 {loading && (
                   <Loader2 className="animate-spin duration-2000 size-4 mr-2" />
@@ -118,7 +123,7 @@ export function SignInForm({
             </Field>
           </FieldGroup>
         </form>
-        <FieldDescription className="px-6 text-center text-balance">
+        <FieldDescription className="px-4 sm:px-6 text-center text-balance">
           By clicking continue, you agree to our{" "}
           <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
         </FieldDescription>

@@ -8,6 +8,7 @@ import {
   BadgeCheck,
   Facebook,
   Instagram,
+  LucideAward,
   LucideFacebook,
   MapPin,
   Pin,
@@ -17,8 +18,11 @@ import {
   YoutubeIcon,
 } from "lucide-react";
 import { useEffect, useRef } from "react";
+import { badges } from "../ProfessionalDashboard/Referrals/Referrals";
+import { ProfessionalProfilePublicData } from "@/hooks/use-professional-profile-public";
+import RatingStars from "@/components/RatingStars";
 
-const EarlySupporterPill = () => {
+const Badge = ({ name = "" }) => {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -65,6 +69,10 @@ const EarlySupporterPill = () => {
     );
   }, []);
 
+  const title =
+    badges.find((b) => b.name === name)?.title ||
+    "Early supporter - Founding Year";
+
   return (
     <div className="rounded-[50px] w-fit h-fit p-[1px] relative overflow-hidden">
       <div
@@ -72,8 +80,8 @@ const EarlySupporterPill = () => {
         ref={ref}
       />
       <div className="bg-neutral-800 relative z-2 flex text-xs font-light items-center py-2.5 px-4 rounded-[50px]">
-        <Trophy className="size-4 mr-2" strokeWidth={1.5} /> Early Supporter -
-        Founding Year
+        <Trophy className="size-4 mr-2" strokeWidth={1.5} />{" "}
+        {name === "early_supporter" ? "Early Supporter - Founding Year" : title}
       </div>
       {/*<BorderBeam />*/}
     </div>
@@ -81,25 +89,15 @@ const EarlySupporterPill = () => {
 };
 
 type BasicInfoProps = {
-  profileData?: {
-    full_name: string;
-    position: string;
-    address: string;
-    bio: string;
-    profile_picture_url: string | null;
-    facebook?: string | null;
-    instagram?: string | null;
-    twitter?: string | null;
-    youtube?: string | null;
-    // Add other fields as needed
-  };
+  profileData?: ProfessionalProfilePublicData;
   isLoading?: boolean;
 };
 
 const BasicInfo = ({ profileData, isLoading }: BasicInfoProps) => {
+  const badge = profileData?.badge;
   return (
-    <div className="flex w-full text-white justify-center gap-8">
-      <div className=" bg-white/10 rounded-[20px] p-2 relative">
+    <div className="flex max-md:flex-col w-full text-white justify-center gap-8">
+      <div className=" bg-white/10 flex items-center w-fit max-md:h-fit flex-col rounded-[20px] p-2 relative">
         {!isLoading && (
           <img
             src={profileData?.profile_picture_url}
@@ -109,40 +107,74 @@ const BasicInfo = ({ profileData, isLoading }: BasicInfoProps) => {
           />
         )}
         {isLoading && (
-          <div className="animate-pulse bg-white/10 rounded-[18px] w-[450px] h-[280px]" />
+          <div className="animate-pulse  bg-white/10 rounded-[18px] max-sm:w-[88vw] max-sm:aspect-square aspect-video h-[280px] w-[450px]" />
         )}
         <div className="flex items-center py-3 justify-center gap-3">
-          <div className="flex gap-1 ">
-            <Star className="size-3 fill-brand stroke-brand" />
-            <Star className="size-3 fill-brand stroke-brand" />
-            <Star className="size-3 fill-brand stroke-brand" />
-            <Star className="size-3 fill-brand stroke-brand" />
-            <Star className="size-3 fill-brand stroke-brand" />
-          </div>
-          <div className="text-sm text-white/50 font-bold">
-            4.5 | 100 reviews{" "}
+          <RatingStars rating={Number(profileData?.reviews_metadata?.avg)} />
+          <div className="text-sm flex gap-2 uppercase text-white/50 font-bold">
+            {Number(profileData?.reviews_metadata?.avg || "0").toFixed(1)}{" "}
+            <span>|</span> {profileData?.reviews_metadata?.count} reviews{" "}
           </div>
         </div>
       </div>
-      <div className="w-[500px]">
-        <EarlySupporterPill />
+      <div className="max-w-[500px]">
+        {profileData?.badge && <Badge name={profileData.badge} />}
         <div>
-          <h1 className="text-2xl font-medium font-profile-header mt-4 flex items-center gap-2">
-            {profileData?.full_name ||
-              (isLoading ? (
-                <span className="animate-pulse bg-neutral-800 px-10 py-2 rounded w-[180px] inline-block" />
-              ) : (
-                "Unknown User"
-              ))}{" "}
-            <Tooltip delayDuration={0}>
-              <TooltipTrigger>
-                <BadgeCheck className="size-6 text-blue-400 ml-2" />
-              </TooltipTrigger>
-              <TooltipContent>
-                <div>Phone number has been verified!</div>
-              </TooltipContent>
-            </Tooltip>
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1
+              className={`text-2xl font-medium font-profile-header mt-4 flex items-center gap-2 ${
+                badge === "5_referrals" ? "bg-anim" : ""
+              }`}
+            >
+              {profileData?.full_name ||
+                (isLoading ? (
+                  <span className="animate-pulse bg-neutral-800 px-10 py-2 rounded w-[180px] inline-block" />
+                ) : (
+                  "Unknown User"
+                ))}{" "}
+              {profileData?.phone_verified && (
+                <Tooltip delayDuration={0}>
+                  <TooltipTrigger>
+                    <BadgeCheck className="size-6 text-blue-400 ml-2" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <div>Phone number has been verified!</div>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+            </h1>
+            {badge === "5_referrals" && (
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <button className="p-1 mt-4 ml-1 size-fit border rounded-full bg-yellow-500/80 border-yellow-500/50 cursor-pointer">
+                    <LucideAward className="size-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="text-sm font-normal font-profile-para">
+                    Highly referred professional.
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+            {badge === "verified_og" && (
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <button className=" cursor-pointer">
+                    <img
+                      src="/badge-verified-og.png"
+                      className="size-10 object-contain translate-y-[13px] -translate-x-[5px]"
+                    />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="text-xs font-normal font-profile-para">
+                    Verified OG - Highly recommended professional!
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
           <p className="font-bold font-profile-para text-xs text-white/50 uppercase mt-2">
             {profileData?.position ||
               (isLoading ? (
@@ -153,8 +185,10 @@ const BasicInfo = ({ profileData, isLoading }: BasicInfoProps) => {
           </p>
 
           <div className="h-full">
-            <div className="max-w-[500px] space-y-3 mt-5 text-sm text-white/50 leading-6">
-              <p className="font-profile-para font-light">
+            <div
+              className={`${!isLoading ? "max-w-[500px]" : "sm:w-[300px] lg:w-[500px]"} space-y-3 mt-5 text-sm text-white/50 leading-6`}
+            >
+              <p className="font-profile-para text-sm  lg:text-base font-light">
                 {profileData?.bio ||
                   (isLoading ? (
                     <span className="animate-pulse bg-neutral-800 px-10 rounded w-full h-[24px] inline-block" />
@@ -163,15 +197,18 @@ const BasicInfo = ({ profileData, isLoading }: BasicInfoProps) => {
                   ))}
               </p>
             </div>
-            <div className="flex justify-between mt-5 ">
+            <div className="flex max-md:flex-col gap-5 justify-between max-md:mt-8 mt-5 ">
               <address className="flex items-center text-xs gap-1 text-white/50 font-extralight">
                 {!isLoading && <MapPin className="size-3.5 rotate-[9deg]" />}
-                {profileData?.address ||
-                  (isLoading ? (
-                    <span className="animate-pulse bg-neutral-800 px-5 rounded w-48" />
-                  ) : (
-                    "-"
-                  ))}
+                {isLoading ? (
+                  <span className="animate-pulse bg-neutral-800 px-5 rounded w-48" />
+                ) : (
+                  [
+                    profileData?.street_address,
+                    profileData?.city,
+                    profileData.state,
+                  ].join(", ")
+                )}
               </address>
               <div className="flex items-center gap-5 text-white/60">
                 {profileData?.facebook && (

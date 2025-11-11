@@ -3,10 +3,10 @@ import { SignInForm } from "./signin-form";
 
 const SignIn = () => {
   return (
-    <div className="px-20">
+    <div className="px-4 sm:px-6 md:px-10 lg:px-16 xl:px-20">
       <Nav />
       <div className="w-full h-full max-w-[1600px] mx-auto flex items-center justify-center">
-        <div className="max-w-[450px] mt-5">
+        <div className="w-full max-w-[450px] mt-4 sm:mt-6 md:mt-8">
           <SignInForm />
         </div>
       </div>

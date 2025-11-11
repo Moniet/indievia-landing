@@ -1,3 +1,4 @@
+import { fetchProfile } from "@/hooks/use-profile";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 import { useEffect } from "react";
@@ -13,21 +14,27 @@ const ConfirmAuth = () => {
 
   const handleSignIn = async () => {
     // Get the user
-    const userRes = await supabase.auth.getUser();
-    const user = userRes.data.user;
-    const userId = user?.id;
-
-    const role: string | undefined = user?.user_metadata?.role;
+    const profile = await fetchProfile().then((d) => d.data);
+    const role: string | undefined = profile?.profile?.role;
+    const user = await supabase.auth.getUser();
+    console.log({ role });
 
     // Optionally create a profile if needed for new user
     //
-    await supabase.functions.invoke(`auth_check?email=${user?.email}`);
+    await supabase.functions.invoke(
+      `auth_check?email=${user?.data?.user?.email}`,
+    );
 
     // Redirect based on role
     if (role === "client") {
       navigate(`/client/dashboard`, { replace: true });
+      return;
     } else if (role === "professional") {
       navigate("/professional/dashboard", { replace: true });
+      return;
+    } else if (role === "admin") {
+      navigate("/admin/dashboard", { replace: true });
+      return;
     } else {
       // Fallback redirect in case of missing or invalid role
       navigate("/", { replace: true });

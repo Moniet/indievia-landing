@@ -139,12 +139,12 @@ const BasicInfo = ({ badge }: { badge?: string }) => {
           defaultValues={profileData}
         />
       )}
-      <div className="flex w-full text-white justify-between gap-10">
-        <div className=" bg-white/10 rounded-[20px] h-fit p-2">
+      <div className="flex w-full text-white max-md:items-center max-md:mt-10 justify-between gap-10 max-md:flex-col">
+        <div className=" bg-white/10 rounded-[20px] h-fit p-2 w-fit">
           <img
-            src={profilePicture}
+            src={profilePicture + `?random=${Math.random()}`}
             alt={fullName}
-            className="rounded-[18px] aspect-square shadow-md w-[250px] h-fit object-cover"
+            className="rounded-[18px] aspect-square shadow-md w-[300px]  md:w-[250px] h-fit object-cover"
           />
           <div className="flex items-center pt-2 pb-1 justify-center gap-3">
             <div className="text-sm text-white/50 font-bold">
@@ -154,7 +154,7 @@ const BasicInfo = ({ badge }: { badge?: string }) => {
             </div>
           </div>
         </div>
-        <div className="lg:w-[500px]">
+        <div className="lg:w-[500px] max-md:max-w-[300px] max-md:w-full">
           {badge && <EarlySupporterPill />}
           <div>
             <h1 className="text-2xl font-medium font-profile-header mt-4 flex items-center gap-2">
@@ -173,16 +173,33 @@ const BasicInfo = ({ badge }: { badge?: string }) => {
                   </TooltipContent>
                 </Tooltip>
               )}
+              {badge === "early_supporter" && (
+                <Tooltip delayDuration={0}>
+                  <TooltipTrigger asChild>
+                    <button className=" cursor-pointer">
+                      <img
+                        src="/badge-founding-year.png"
+                        className="size-8 object-contain translate-y-[5px] -translate-x-[5px]"
+                      />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="text-xs font-normal font-profile-para">
+                      Early supporter - Founding Year.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
             </h1>
             <p className="font-bold font-profile-para text-xs text-white/50 uppercase mt-2">
               {position}
             </p>
 
-            <div className="h-full">
-              <div className="max-w-[500px] space-y-3 mt-5 text-sm text-white/50 leading-6">
+            <div className="h-full max-md:mt-5">
+              <div className="lg:max-w-[500px] space-y-3 mt-5 text-sm text-white/50 leading-6">
                 <p className="font-profile-para font-light">{bio}</p>
               </div>
-              <div className="flex justify-between mt-5 ">
+              <div className="flex justify-between mt-5 max-md:flex-col max-md:gap-5">
                 <address className="flex items-center text-xs gap-1 text-white/50 font-extralight">
                   <MapPin className="size-3.5 rotate-[9deg]" />
                   {address}

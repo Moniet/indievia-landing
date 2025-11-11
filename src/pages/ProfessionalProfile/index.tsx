@@ -10,16 +10,20 @@ import { useProfessionalProfilePublic } from "@/hooks/use-professional-profile-p
 import { useReviews } from "@/hooks/user-reviews";
 import { useParams } from "react-router-dom";
 import { useMemo } from "react";
+import useUser from "@/hooks/use-user";
 
 const ProfessionalProfile = () => {
   const [{ profileData, error, ...profileQueryRest }, isProfileLoading] =
     useProfessionalProfilePublic();
+  const [{ user }] = useUser();
   const { profileSlug } = useParams();
   const { data, isLoading: isLoadingReviews } = useReviews(profileSlug);
   const reviewPages = data?.pages;
   const reviews = useMemo(() => {
     return reviewPages?.flatMap((p) => p.data.reviews);
   }, [reviewPages]);
+
+  const isProfessionalsPage = user?.data?.user?.id === profileData?.user_id;
 
   return (
     <>
@@ -48,9 +52,16 @@ const ProfessionalProfile = () => {
               {...profileQueryRest}
             />
             <Reviews
+              onClickViewMore={() => {}}
+              isLoadingViewMore={false}
               isLoading={isLoadingReviews}
               reviews={reviews || []}
-              mode={"professional-dashboard-public"}
+              professionalProfilePicture={profileData?.profile_picture_url}
+              mode={
+                isProfessionalsPage
+                  ? "professional-dashboard-private"
+                  : "professional-dashboard-public"
+              }
             />
           </div>
         </div>

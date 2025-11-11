@@ -15,6 +15,10 @@ import ProfessionalDashboard from "./pages/ProfessionalDashboard";
 import SignIn from "./pages/SignIn/SignIn";
 import SignUp from "./pages/SignIn/SignUp";
 import ConfirmAuth from "./pages/SignIn/ConfirmAuth";
+import PhoneVerification from "./pages/PhoneVerification";
+import { AdminPage } from "./pages/Admin/AdminPage";
+import { AdminSignInForm } from "./pages/SignIn/admin-signin-form";
+import AdminSignIn from "./pages/SignIn/AdminSignIn";
 
 const queryClient = new QueryClient();
 
@@ -35,10 +39,13 @@ const App = () => (
             path="/professional/dashboard/*"
             element={<ProfessionalDashboard />}
           />
+          <Route path="/admin/sign-in" element={<AdminSignIn />} />
+          <Route path="/admin/dashboard*" element={<AdminPage />} />
           <Route path={"/client/:clientId"} element={<ClientProfile />} />
           <Route path={"/client/profile"} element={<ClientProfile />} />
           <Route path={"/sign-in"} element={<SignIn />} />
           <Route path={"/sign-up"} element={<SignUp />} />
+          <Route path={"/auth/verify-phone"} element={<PhoneVerification />} />
           <Route path={"/auth/confirm"} element={<ConfirmAuth />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />

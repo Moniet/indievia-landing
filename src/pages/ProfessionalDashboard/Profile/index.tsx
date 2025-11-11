@@ -3,19 +3,37 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import Select from "react-select";
+import { usStates } from "@/constants/usStates";
 import { useStore } from "@/hooks/use-store";
 import { EarlySupporterPill } from "@/pages/ClientProfile/BasicInfo";
 import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { professionalTags } from "./tags";
+import { Link } from "react-router-dom";
+import {
   BadgeCheck,
   Camera,
-  CheckCircle,
   CheckCircle2,
   Eye,
   Loader2,
   LucideSave,
   Plus,
-  PlusCircle,
-  PlusSquare,
+  SquareArrowOutUpRight,
   User2,
 } from "lucide-react";
 import { ChangeEventHandler, useState, useRef, useMemo } from "react";
@@ -34,7 +52,6 @@ import { useReviews } from "@/hooks/user-reviews";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import useUser from "@/hooks/use-user";
 
-// ------ BadgeDonut Component ------
 const BadgeDonut = ({
   src,
   progress,
@@ -76,8 +93,13 @@ const profileSchema = z.object({
   email: z.string().email({ message: "Enter a valid email." }),
   fullName: z.string().min(2, { message: "Full name is required." }),
   position: z.string().min(2, { message: "Position is required." }),
-  address: z.string().min(2, { message: "Address is required." }),
+  streetAddress: z.string().min(2, { message: "Street address is required." }),
+  city: z.string().min(2, { message: "Please fill in the city." }),
+  state: z.string().min(2, { message: "Please fill in the state." }),
   bio: z.string().min(10, { message: "Bio must be at least 10 characters." }),
+  tags: z
+    .array(z.string())
+    .min(5, { message: "Add at least 5 tags to your profile." }),
   website: z
     .string()
     .url({ message: "Enter a valid URL." })
@@ -113,26 +135,9 @@ const profileSchema = z.object({
     .min(1, { message: "URL path is required." })
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, {
       message:
-        "Slug must be lowercase, no spaces, and only letters, numbers, and hyphens.",
+        "Must be lowercase, no spaces, and only letters, numbers, and hyphens.",
     }),
 });
-
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogFooter,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogAction,
-  AlertDialogCancel,
-} from "@/components/ui/alert-dialog";
-import { toast } from "sonner";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 const Gallery = () => {
   const [{ user }] = useUser();
@@ -374,7 +379,9 @@ export const Profile = () => {
     },
   ];
 
-  const referralCount = profileData?.referrals_count || 0;
+  const referralCount = profileData?.referral_count || 0;
+
+  console.log({ profileData, referralCount });
 
   const badgesWithProgress = badges.map((badge) => ({
     ...badge,
@@ -393,15 +400,25 @@ export const Profile = () => {
   );
 
   const reviews = useMemo(() => {
-    return reviewsData?.pages?.flatMap((p) => p.data.reviews) || [];
+    return (
+      reviewsData?.pages
+        ?.flatMap((p) => p?.data?.reviews)
+        .map((r) => ({
+          ...r,
+          client_profiles: {
+            full_name: r?.client_full_name,
+            profile_picture_url: r?.client_profile_picture,
+          },
+        })) || []
+    );
   }, [reviewsData]);
   const [isPublishing, setIsPublishing] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [uploadingProfilePic, setUploadingProfilePic] = useState(false);
-
   const [slugAvailable, setSlugAvailable] = useState<null | boolean>(null);
   const [checkingSlug, setCheckingSlug] = useState(false);
   const slugCheckRef = useRef<number>();
+  const randomNum = useMemo(() => Math.random(), []);
 
   const {
     register,
@@ -410,13 +427,16 @@ export const Profile = () => {
     watch,
     setValue,
     formState: { errors, isSubmitting },
-  } = useForm<import("@/integrations/supabase/profile").ProfileForm>({
+  } = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
       email: "",
       fullName: "",
+      tags: [],
       position: "",
-      address: "",
+      city: "",
+      state: "",
+      streetAddress: "",
       bio: "",
       website: "",
       instagram: "",
@@ -427,15 +447,52 @@ export const Profile = () => {
     },
   });
 
-  const formValues = watch();
-  const fullName = formValues.fullName;
+  const fullName = watch("fullName");
+  const slug = watch("slug");
+  const tags = watch("tags");
 
   const previewData = {
     ...profileData,
-    ...formValues,
-    full_name: formValues.fullName,
+    ...watch(),
+    full_name: fullName,
     profile_picture_url: profilePictureUrl,
   };
+
+  console.log({ previewData });
+  // Slug availability check
+  useEffect(() => {
+    if (slugCheckRef.current) {
+      clearTimeout(slugCheckRef.current);
+    }
+
+    if (!slug || slug === profileData?.slug) {
+      setSlugAvailable(null);
+      setCheckingSlug(false);
+      return;
+    }
+
+    setCheckingSlug(true);
+    setSlugAvailable(null);
+
+    slugCheckRef.current = window.setTimeout(async () => {
+      // check Supabase for slug
+      const { data } = await supabase.functions.invoke(
+        `check_slug_availability?search=${slug}`,
+        { method: "GET" },
+      );
+
+      // if it's available OR if it's taken by the current user
+      const isAvailable = data?.isAvailable || data?.id === profileData?.id;
+      setSlugAvailable(isAvailable);
+      setCheckingSlug(false);
+    }, 600);
+
+    return () => {
+      if (slugCheckRef.current) {
+        clearTimeout(slugCheckRef.current);
+      }
+    };
+  }, [slug, profileData?.id, profileData?.slug]);
 
   // Hydrate form when data arrives
   useEffect(() => {
@@ -446,8 +503,11 @@ export const Profile = () => {
           profileData.full_name ||
           user.data.user?.user_metadata?.fullName ||
           "Add Name",
+        tags: profileData?.tags || [],
         position: profileData.position || "",
-        address: profileData.address || "",
+        streetAddress: profileData.street_address || "",
+        city: profileData.city || "",
+        state: profileData.state || "",
         bio: profileData.bio || "",
         slug: profileData.slug || "",
         website: profileData.website || "",
@@ -537,14 +597,19 @@ export const Profile = () => {
 
   return (
     <div className="w-full h-full">
-      <div className="w-full realtive justify-between flex pt-20 px-12 bg-gradient-to-b rounded-tl-lg rounded-tr-lg p-5 from-brand/40 via-brand/10 to-transparent">
+      <div className="w-full relative justify-between flex lg:flex-row flex-col max-md:gap-5 pt-20 sm:px-8 lg:px-12 bg-gradient-to-b rounded-tl-lg rounded-tr-lg p-5 from-brand/40 via-brand/10 to-transparent">
         <div className="">
           <div className="relative flex items-center">
             <div
-              className={`relative ${uploadingProfilePic ? "animate-pulse pointer-events-none" : ""}`}
+              className={`relative ${
+                uploadingProfilePic ? "animate-pulse pointer-events-none" : ""
+              }`}
             >
               <Avatar className="size-[100px] relative">
-                <AvatarImage src={profilePictureUrl} className="size-[100px]" />
+                <AvatarImage
+                  src={profilePictureUrl + `?random=${randomNum}`}
+                  className="size-[100px]"
+                />
                 <AvatarFallback>
                   <User2 className="size-8" />
                 </AvatarFallback>
@@ -564,12 +629,12 @@ export const Profile = () => {
               />
             </div>
             <div className="pl-5 flex flex-col justify-center">
-              {referralCount > 3 && <EarlySupporterPill isSmall />}
-              {referralCount > 3 && <div className="h-2" />}
+              {referralCount >= 3 && <EarlySupporterPill isSmall />}
+              {referralCount >= 3 && <div className="h-2" />}
 
               <div className="text-2xl flex items-center">
                 {fullName || "*Add your name below*"}{" "}
-                {!phoneVerified && (
+                {phoneVerified && (
                   <Tooltip delayDuration={0}>
                     <TooltipTrigger>
                       <BadgeCheck className="size-6 text-blue-400 ml-2" />
@@ -610,13 +675,55 @@ export const Profile = () => {
           </div>
         </div>
       </div>
-      <div className="px-12 flex-1 overflow-y-auto pb-20">
+      <div className="sm:px-5 lg:px-12 flex-1 overflow-y-auto pb-20 max-lg:pt-5">
         <Separator className="mb-5" />
         <form
-          className="space-y-10 w-2/3"
+          className="space-y-10 w-full lg:w-2/3"
           onSubmit={handleSubmit(onSubmit)}
           noValidate
         >
+          <div>
+            <Label>Username</Label>
+            <Input
+              className="border-0 bg-white/10 mt-2"
+              placeholder="your-url-path"
+              {...register("slug")}
+              onChange={(e) => {
+                const val = e.target.value
+                  .toLowerCase()
+                  .replace(/[^\w\s-]/g, "")
+                  .replace(/\s+/g, "-")
+                  .replace(/-+/g, "-");
+                setValue("slug", val, { shouldValidate: true });
+              }}
+            />
+            {checkingSlug ? (
+              <div className="text-xs text-yellow-300 font-light mt-2">
+                Checking availability...
+              </div>
+            ) : slugAvailable === false ? (
+              <div className="text-xs text-red-400 font-light mt-2">
+                That URL path is taken.
+              </div>
+            ) : slugAvailable === true ? (
+              <div className="text-xs text-green-400 font-light mt-2">
+                username is available!
+              </div>
+            ) : null}
+            {errors.slug && (
+              <div className="text-xs text-red-400 font-light mt-2">
+                {errors.slug.message}
+              </div>
+            )}
+            <div className="text-xs text-white/50 font-light mt-2">
+              This will be the URL of your profile (
+              <code>
+                indievia.com/professional/
+                <b>{watch("slug") || "your-url-path"}</b>
+              </code>
+              )
+            </div>
+          </div>
           <div>
             <Label>Contact Email</Label>
             <Input
@@ -669,23 +776,118 @@ export const Profile = () => {
               Let customers know about your expertise.
             </div>
           </div>
+
           <div>
-            <Label>Address</Label>
-            <Input
-              className="border-0 bg-white/10 mt-2"
-              placeholder={"Location of your practice or parlour"}
-              {...register("address")}
-              autoComplete="street-address"
-            />
-            {errors.address && (
-              <div className="text-xs text-red-400 font-light mt-2">
-                {errors.address.message}
+            <div>
+              <Label>Address</Label>
+              <div className="flex gap-2 w-full">
+                <div className="flex-[4]">
+                  <Input
+                    className="border-0 bg-white/10 mt-2"
+                    placeholder={"Location of your practice or parlour"}
+                    {...register("streetAddress")}
+                    autoComplete="street-address"
+                  />
+
+                  {errors.streetAddress && (
+                    <div className="text-xs text-red-400 font-light mt-2">
+                      {errors.streetAddress.message}
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <Input
+                    className="border-0 bg-white/10 mt-2"
+                    placeholder={"City"}
+                    {...register("city")}
+                  />
+                  {errors.city && (
+                    <div className="text-xs text-red-400 font-light mt-2">
+                      {errors.city.message}
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <Select
+                    onChange={(option) =>
+                      setValue("state", option?.label || "")
+                    }
+                    value={usStates.find(
+                      (option) => option.label === watch("state"),
+                    )}
+                    unstyled
+                    options={usStates}
+                    placeholder="State"
+                    isClearable
+                    className="bg-white/10 text-sm mt-2 rounded-md"
+                    classNames={{
+                      valueContainer: () => "flex gap-2 p-2",
+                      multiValue: () =>
+                        "bg-blue-500 p-[5px] rounded-sm text-xs",
+                      menu: () => "bg-neutral-800 p-3",
+                      groupHeading: () => "text-base font-medium mb-2 ",
+                      menuList: () => "space-y-2",
+                      option: () =>
+                        "hover:text-white mb-1 text-white/70 rounded-md",
+                    }}
+                  />
+                  {errors.state && (
+                    <div className="text-xs text-red-400 font-light mt-2">
+                      {errors.state.message}
+                    </div>
+                  )}
+                </div>
               </div>
+              <span className="mt-2 text-white/50 text-xs font-light balance">
+                Include city, state, and county to be found easier.
+              </span>
+            </div>
+          </div>
+
+          <div className="flex flex-col">
+            <Label>Tags</Label>
+            <Select
+              isMulti
+              unstyled
+              value={[
+                ...professionalTags[0].options,
+                ...professionalTags[1].options,
+              ].filter((item) => tags.includes(item.value))}
+              // getOptionValue={(v) => v.value}
+              // getOptionLabel={(v) => v?.}
+              onChange={(v) =>
+                setValue(
+                  "tags",
+                  v.map((i) => i.value),
+                )
+              }
+              className="bg-white/10 text-sm mt-2 rounded-md"
+              classNames={{
+                valueContainer: () => "flex gap-2 p-2",
+                multiValue: () => "bg-blue-500 p-[5px] rounded-sm text-xs",
+                menu: () => "bg-neutral-800 p-3",
+                groupHeading: () => "text-base font-medium mb-2 ",
+                menuList: () => "space-y-2",
+                option: () => "hover:text-white mb-1 text-white/70 rounded-md",
+              }}
+              options={professionalTags}
+            />
+            {errors.tags && (
+              <span className="text-xs text-red-500 font-light">
+                {errors.tags.message}
+              </span>
             )}
+            <span className="mt-2 text-white/50 text-xs font-light">
+              These tags will help our system recommend you for searched and
+              <b className=" text-white/70 ml-1">
+                does not show up publically.
+              </b>
+            </span>
           </div>
           <div>
-            <Label>Bio</Label>
+            <Label htmlFor="bio">Bio</Label>
             <Textarea
+              id="bio"
               className="border-0 bg-white/10 mt-2 "
               placeholder={
                 "I'm a highly experienced tattooist, with a degree in fine-arts amd take pride in creating hyper-realistic tattoos as well as..."
@@ -702,74 +904,7 @@ export const Profile = () => {
               Tell customers about what makes you the best!
             </div>
           </div>
-          <div>
-            <Label>URL path</Label>
-            <Input
-              className="border-0 bg-white/10 mt-2"
-              placeholder="your-url-path"
-              {...register("slug")}
-              onChange={(e) => {
-                let val = e.target.value
-                  .toLowerCase()
-                  .replace(/[^\w\s-]/g, "")
-                  .replace(/\s+/g, "-")
-                  .replace(/-+/g, "-");
-                e.target.value = val;
-                if (
-                  typeof getValues === "function" &&
-                  typeof setValue === "function"
-                ) {
-                  setValue("slug", val, { shouldValidate: true });
-                }
-                setSlugAvailable(null);
-                setCheckingSlug(true);
-                if (slugCheckRef.current) {
-                  clearTimeout(slugCheckRef.current);
-                }
-                slugCheckRef.current = window.setTimeout(async () => {
-                  if (!val) {
-                    setSlugAvailable(null);
-                    setCheckingSlug(false);
-                    return;
-                  }
-                  // check Supabase for slug
-                  const { data } = await supabase
-                    .from("professional_profiles")
-                    .select("id")
-                    .eq("slug", val)
-                    .limit(1)
-                    .single();
-                  setSlugAvailable(!data);
-                  setCheckingSlug(false);
-                }, 600);
-              }}
-            />
-            {checkingSlug ? (
-              <div className="text-xs text-yellow-300 font-light mt-2">
-                Checking availability...
-              </div>
-            ) : slugAvailable === false ? (
-              <div className="text-xs text-red-400 font-light mt-2">
-                That URL path is taken.
-              </div>
-            ) : slugAvailable === true ? (
-              <div className="text-xs text-green-400 font-light mt-2">
-                URL path is available!
-              </div>
-            ) : null}
-            {errors.slug && (
-              <div className="text-xs text-red-400 font-light mt-2">
-                {errors.slug.message}
-              </div>
-            )}
-            <div className="text-xs text-white/50 font-light mt-2">
-              This will be the URL of your profile (eg:{" "}
-              <code>
-                yourdomain.com/profile/<b>{watch("slug") || "your-url-path"}</b>
-              </code>
-              )
-            </div>
-          </div>
+
           <div>
             <Label>Social media URLs</Label>
             <div className="text-xs font-light text-white/50 mb-5 mt-2">
@@ -865,31 +1000,47 @@ export const Profile = () => {
               <Gallery />
             </div>
           </div>
-          <div className="space-x-3 flex sticky bottom-0 left-0">
-            <button
-              type="button"
-              className="px-4 py-2 rounded-md border border-white/20 flex items-center text-sm hover:bg-white/20 transition-colors bg-white/10"
-              onClick={() => setIsPreviewOpen(true)}
-            >
-              <Eye className="size-4 mr-2" />
-              Preview
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="px-4 py-2 hover:bg-white/80 transition-colors rounded-md  bg-white text-black font-medium text-sm border border-white/10 flex items-center justify-center"
-            >
-              {!isPublishing && (
-                <>
-                  <LucideSave className="size-4 mr-2" /> Publish Profile
-                </>
-              )}
-              {isPublishing && (
-                <>
-                  <Loader2 className="size-4 animate-spin mr-2" /> Publishing...
-                </>
-              )}
-            </button>
+          <div className="lg:space-x-3 flex max-lg:flex-col max-lg:gap-3 items-start justify-between sticky bottom-0 left-0 w-full">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                className="px-4 py-2 rounded-md border border-white/20 flex items-center text-sm hover:bg-white/20 transition-colors bg-white/10"
+                onClick={() => setIsPreviewOpen(true)}
+              >
+                <Eye className="size-4 mr-2" />
+                Quick Preview
+              </button>
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="px-4 py-2 hover:bg-white/80 transition-colors rounded-md  bg-white text-black font-medium text-sm border border-white/10 flex items-center justify-center"
+              >
+                {!isPublishing && (
+                  <>
+                    <LucideSave className="size-4 mr-2" /> Publish Profile
+                  </>
+                )}
+                {isPublishing && (
+                  <>
+                    <Loader2 className="size-4 animate-spin mr-2" />{" "}
+                    Publishing...
+                  </>
+                )}
+              </button>
+            </div>
+            <div style={{ display: slug ? "block" : "none" }}>
+              <Button
+                asChild
+                variant="default"
+                className="max-md:w-full"
+                // className="font-normal bg-blue-600 hover:bg-blue-700 hover:border-blue-600 border-blue-500"
+              >
+                <Link to={`/professional/${slug}`} target="_blank">
+                  <SquareArrowOutUpRight className="size-4" /> View Live Profile
+                </Link>
+              </Button>
+            </div>
           </div>
         </form>
       </div>

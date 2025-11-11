@@ -3,130 +3,148 @@
 @tailwind utilities;
 
 @layer base {
-    :root {
-        --background: 0, 0%, 5.88%;
-        --foreground: 0 0% 96%;
+  :root {
+    --background: 0, 0%, 5.88%;
+    --foreground: 0 0% 96%;
 
-        --card: 0 0% 12%;
-        --card-foreground: 0 0% 96%;
+    --card: 0 0% 12%;
+    --card-foreground: 0 0% 96%;
 
-        --popover: 0 0% 12%;
-        --popover-foreground: 0 0% 96%;
+    --popover: 0 0% 12%;
+    --popover-foreground: 0 0% 96%;
 
-        --primary: 214 100% 53%;
-        --primary-foreground: 0 0% 100%;
+    --primary: 214 100% 53%;
+    --primary-foreground: 0 0% 100%;
 
-        --secondary: 0 0% 15%;
-        --secondary-foreground: 0 0% 96%;
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 96%;
 
-        --muted: 0 0% 20%;
-        --muted-foreground: 0 0% 70%;
+    --muted: 0 0% 20%;
+    --muted-foreground: 0 0% 70%;
 
-        --accent: 214 95% 53%;
-        --accent-foreground: 0 0% 100%;
+    --accent: 214 95% 53%;
+    --accent-foreground: 0 0% 100%;
 
-        --destructive: 0 84% 60%;
-        --destructive-foreground: 0 0% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
 
-        --border: 0 0% 25%;
-        --input: 0 0% 30%;
-        --ring: 214 100% 50%;
+    --border: 0 0% 25%;
+    --input: 0 0% 30%;
+    --ring: 214 100% 50%;
 
-        --radius: 0.5rem;
+    --radius: 0.5rem;
 
-        --sidebar-background: 0 0% 6%;
-        --sidebar-foreground: 0 0% 96%;
-        --sidebar-primary: 214 100% 53%;
-        --sidebar-primary-foreground: 0 0% 100%;
-        --sidebar-accent: 0 0% 15%;
-        --sidebar-accent-foreground: 0 0% 96%;
-        --sidebar-border: 0 0% 20%;
-        --sidebar-ring: 214 100% 60%;
-    }
-    .theme {
-        --animate-border-beam: border-beam calc(var(--duration) * 1s) infinite
-            linear;
-    }
+    --sidebar-background: 0 0% 6%;
+    --sidebar-foreground: 0 0% 96%;
+    --sidebar-primary: 214 100% 53%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 15%;
+    --sidebar-accent-foreground: 0 0% 96%;
+    --sidebar-border: 0 0% 20%;
+    --sidebar-ring: 214 100% 60%;
+  }
+  .theme {
+    --animate-border-beam: border-beam calc(var(--duration) * 1s) infinite
+      linear;
+  }
 }
 
 @layer base {
-    * {
-        @apply border-border;
-    }
+  * {
+    @apply border-border;
+  }
 
-    body {
-        font-feature-settings: "ss01", "ss02", "cv01", "cv02", "cv03";
-    }
+  body {
+    font-feature-settings: "ss01", "ss02", "cv01", "cv02", "cv03";
+  }
 
-    html {
-        @apply scroll-smooth;
-    }
+  html {
+    @apply scroll-smooth;
+  }
 }
 
 @layer utilities {
-    .scrollbar-none {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-    }
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 
-    .scrollbar-none::-webkit-scrollbar {
-        display: none;
-    }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
 
-    /* Sidebar animation */
-    .sidebar-expanded {
-        @apply w-56 transition-all duration-300 ease-in-out;
-    }
+  /* Sidebar animation */
+  .sidebar-expanded {
+    @apply w-56 transition-all duration-300 ease-in-out;
+  }
 
-    .sidebar-collapsed {
-        @apply w-16 transition-all duration-300 ease-in-out;
-    }
+  .sidebar-collapsed {
+    @apply w-16 transition-all duration-300 ease-in-out;
+  }
 
-    .sidebar-icon-expanded {
-        @apply opacity-100 transition-opacity duration-300 ease-in-out;
-    }
+  .sidebar-icon-expanded {
+    @apply opacity-100 transition-opacity duration-300 ease-in-out;
+  }
 
-    .sidebar-icon-collapsed {
-        @apply opacity-0 absolute transition-opacity duration-300 ease-in-out;
-    }
+  .sidebar-icon-collapsed {
+    @apply opacity-0 absolute transition-opacity duration-300 ease-in-out;
+  }
 
-    /* Status badges */
-    .status-pending {
-        @apply bg-employIn-pending/20 text-employIn-pending rounded-full px-3 py-1 text-xs font-medium;
-    }
+  /* Status badges */
+  .status-pending {
+    @apply bg-employIn-pending/20 text-employIn-pending rounded-full px-3 py-1 text-xs font-medium;
+  }
 
-    .status-approved {
-        @apply bg-employIn-approved/20 text-employIn-approved rounded-full px-3 py-1 text-xs font-medium;
-    }
+  .status-approved {
+    @apply bg-employIn-approved/20 text-employIn-approved rounded-full px-3 py-1 text-xs font-medium;
+  }
 
-    .status-rejected {
-        @apply bg-employIn-rejected/20 text-employIn-rejected rounded-full px-3 py-1 text-xs font-medium;
-    }
+  .status-rejected {
+    @apply bg-employIn-rejected/20 text-employIn-rejected rounded-full px-3 py-1 text-xs font-medium;
+  }
 }
 
 @layer base {
-    * {
-        @apply border-border;
-    }
+  * {
+    @apply border-border;
+  }
 }
 
 *::selection {
-    @apply bg-brand/80 text-black;
+  @apply bg-brand/80 text-black;
 }
 
 @layer base {
-    * {
-        @apply border-border;
-    }
-    body {
-        @apply bg-background text-foreground;
-    }
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }
 
 @theme inline {
-    @keyframes border-beam {
-        100% {
-            offset-distance: 100%;
-        }
+  @keyframes border-beam {
+    100% {
+      offset-distance: 100%;
     }
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 0%;
+  }
+  100% {
+    background-position: -200%;
+  }
+}
+
+.bg-anim {
+  -webkit-background-clip: text;
+  background-clip: text;
+  @apply bg-gradient-to-r from-yellow-400 via-zinc-400/25 to-yellow-400;
+  background-size: 200%;
+  color: transparent !important;
+  animation: shimmer 4s ease-in-out infinite;
 }

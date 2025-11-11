@@ -8,7 +8,7 @@ const Layout = ({
   return (
     <div
       className={cn(
-        `w-full h-full px-4 sm:px-[4%] lg:px-[8%]  bg-[#0F0F0F]`,
+        `w-full h-full px-4 sm:px-[4%] lg:px-[8%]  bg-[#0F0F0F] max-w-[1600px] mx-auto`,
         className,
       )}
     >
