@@ -36,27 +36,38 @@ Deno.serve(async (req) => {
       { loc: '/privacy', priority: '0.3', changefreq: 'yearly' },
     ]
 
-    // Generate sitemap XML
-    const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${staticUrls.map(url => `  <url>
-    <loc>${baseUrl}${url.loc}</loc>
-    <changefreq>${url.changefreq}</changefreq>
-    <priority>${url.priority}</priority>
-  </url>`).join('\n')}
-${professionals?.map(pro => `  <url>
-    <loc>${baseUrl}/professional/${pro.slug}</loc>
-    <lastmod>${new Date(pro.updated_at || Date.now()).toISOString()}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>`).join('\n') || ''}
-</urlset>`
+    // Generate sitemap XML with proper formatting
+    let sitemapContent = '<?xml version="1.0" encoding="UTF-8"?>\n'
+    sitemapContent += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    
+    // Add static URLs
+    staticUrls.forEach(url => {
+      sitemapContent += '  <url>\n'
+      sitemapContent += `    <loc>${baseUrl}${url.loc}</loc>\n`
+      sitemapContent += `    <changefreq>${url.changefreq}</changefreq>\n`
+      sitemapContent += `    <priority>${url.priority}</priority>\n`
+      sitemapContent += '  </url>\n'
+    })
+    
+    // Add professional profile URLs
+    if (professionals && professionals.length > 0) {
+      professionals.forEach(pro => {
+        sitemapContent += '  <url>\n'
+        sitemapContent += `    <loc>${baseUrl}/professional/${pro.slug}</loc>\n`
+        sitemapContent += `    <lastmod>${new Date(pro.updated_at || Date.now()).toISOString()}</lastmod>\n`
+        sitemapContent += `    <changefreq>weekly</changefreq>\n`
+        sitemapContent += `    <priority>0.9</priority>\n`
+        sitemapContent += '  </url>\n'
+      })
+    }
+    
+    sitemapContent += '</urlset>'
 
-    return new Response(sitemap, {
+    return new Response(sitemapContent, {
       headers: {
         ...corsHeaders,
-        'Content-Type': 'application/xml',
-        'Cache-Control': 'public, max-age=3600', // Cache for 1 hour
+        'Content-Type': 'application/xml; charset=utf-8',
+        'Cache-Control': 'public, max-age=3600',
       },
     })
   } catch (error) {
