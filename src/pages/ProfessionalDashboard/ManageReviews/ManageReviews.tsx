@@ -830,7 +830,7 @@ const ManageReviews = () => {
                 </div>
               </div>
             )}
-            {hasMoreReviews && !query && (
+            {hasMoreReviews && !query && filtered?.length && (
               <Button
                 className="rounded-full"
                 variant="normal"
