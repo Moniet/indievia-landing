@@ -16,7 +16,6 @@ import { CheckCheck } from "lucide-react"
 const SignIn = () => {
   const [params] = useSearchParams()
   const confirm_email_modal = params.get("confirm_email_modal")
-  console.log({ confirm_email_modal })
 
   return (
     <div className="px-4 sm:px-6 md:px-10 lg:px-16 xl:px-20">
