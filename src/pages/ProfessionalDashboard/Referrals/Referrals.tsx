@@ -84,8 +84,7 @@ export const badges = [
 const Referrals = () => {
   const [copied, setCopied] = useState(false);
   const [{ profileData }, profileIsLoading] = useProfessionalProfile();
-  const { referrals = [], isLoading: referralsIsLoading } =
-    useRecentReferrals();
+  const { referrals, isLoading: referralsIsLoading } = useRecentReferrals();
 
   const isLoading = profileIsLoading || referralsIsLoading;
 
@@ -217,7 +216,7 @@ const Referrals = () => {
                     </div>
                   );
                 })}
-              {!referrals?.data && (
+              {!referrals?.data?.length && (
                 <div>
                   <Empty className="border bg-white/5">
                     <EmptyHeader>
