@@ -1,43 +1,43 @@
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 import {
   Field,
   FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
-  FieldSeparator,
-} from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+  FieldSeparator
+} from "@/components/ui/field"
+import { Input } from "@/components/ui/input"
 
-import { FormEvent, useCallback, useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Sparkle, Sparkles } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import useUser from "@/hooks/use-user";
-import { fetchUserProfile } from "@/services/fetchUserProfile";
+import { FormEvent, useCallback, useEffect, useState } from "react"
+import { supabase } from "@/integrations/supabase/client"
+import { Loader2, Sparkle, Sparkles } from "lucide-react"
+import { Link, useNavigate } from "react-router-dom"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import useUser from "@/hooks/use-user"
+import { fetchUserProfile } from "@/services/fetchUserProfile"
 
 export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const [fullName, setFullName] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState("");
-  const [email, setEmail] = useState("");
-  const [referralCode, setReferralCode] = useState("");
-  const [mode, setMode] = useState<"client" | "pro">("client");
-  const [{ user }, isLoadingUser] = useUser();
-  const nav = useNavigate();
+  const [fullName, setFullName] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState(false)
+  const [error, setError] = useState("")
+  const [email, setEmail] = useState("")
+  const [referralCode, setReferralCode] = useState("")
+  const [mode, setMode] = useState<"client" | "pro">("client")
+  const [{ user }, isLoadingUser] = useUser()
+  const nav = useNavigate()
 
   const handleSignup: React.FormEventHandler = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
 
-    setLoading(true);
-    setError("");
-    setSuccess(false);
+    setLoading(true)
+    setError("")
+    setSuccess(false)
 
     try {
       const { data, error } = await supabase.functions.invoke("sign-up", {
@@ -46,62 +46,63 @@ export function SignupForm({
           fullName,
           referralCode,
           mode: mode === "pro" ? "professional" : "client",
-          redirectTo: window.location.origin + "/auth/confirm",
-        },
-      });
+          redirectTo:
+            window.location.origin + "/sign-in?confirm_email_modal=yes"
+        }
+      })
 
       if (error || data?.error) {
-        const context = await error.context.json();
+        const context = await error.context.json()
         setError(
-          context?.message ||
+          context?.error ||
             error?.message ||
             data?.error ||
-            "Sign up failed. Please try again.",
-        );
+            "Sign up failed. Please try again."
+        )
       } else {
-        setError("");
-        setSuccess(true);
+        setError("")
+        setSuccess(true)
         localStorage.setItem(
           "sign-up-intent",
-          mode === "pro" ? "pro" : "client",
-        );
+          mode === "pro" ? "pro" : "client"
+        )
       }
     } catch (err: any) {
       setError(
         typeof err === "string"
           ? err
-          : "Failed to connect to authentication server.",
-      );
+          : "Failed to connect to authentication server."
+      )
     }
 
-    setLoading(false);
-  };
+    setLoading(false)
+  }
 
   const verify = useCallback(async () => {
     if (user && user.data.user.aud === "authenticated") {
-      const profile = await fetchUserProfile(user.data.user.id);
+      const profile = await fetchUserProfile(user.data.user.id)
       if (profile.data.role === "client") {
         nav("/client/dashboard", {
-          replace: true,
-        });
+          replace: true
+        })
       } else if (profile.data.role === "professional") {
         nav("/professional/dashboard", {
-          replace: true,
-        });
+          replace: true
+        })
       }
     }
-  }, [user]);
+  }, [user])
 
   useEffect(() => {
-    (() => {
-      const search = new URLSearchParams(window.location.search);
+    ;(() => {
+      const search = new URLSearchParams(window.location.search)
       if (search.get("referralCode")) {
-        setReferralCode(search.get("referralCode"));
+        setReferralCode(search.get("referralCode"))
       }
-    })();
+    })()
 
-    verify();
-  }, [user, verify]);
+    verify()
+  }, [user, verify])
 
   return (
     <div className="border border-neutral-800 rounded-lg p-4 sm:p-6 md:p-7">
@@ -176,7 +177,6 @@ export function SignupForm({
                 value={referralCode}
                 onChange={(e) => setReferralCode(e.target.value?.trim())}
               />
-              {error && <FieldError>{error}</FieldError>}
             </Field>
             <Field className="mt-5">
               <Button
@@ -207,5 +207,5 @@ export function SignupForm({
         </FieldDescription>
       </div>
     </div>
-  );
+  )
 }
