@@ -1,12 +1,12 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
-import Select from "react-select";
-import { usStates } from "@/constants/usStates";
-import { useStore } from "@/hooks/use-store";
-import { EarlySupporterPill } from "@/pages/ClientProfile/BasicInfo";
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Separator } from "@/components/ui/separator"
+import { Textarea } from "@/components/ui/textarea"
+import Select from "react-select"
+import { usStates } from "@/constants/usStates"
+import { useStore } from "@/hooks/use-store"
+import { EarlySupporterPill } from "@/pages/ClientProfile/BasicInfo"
 import {
   AlertDialog,
   AlertDialogContent,
@@ -15,16 +15,16 @@ import {
   AlertDialogTitle,
   AlertDialogDescription,
   AlertDialogAction,
-  AlertDialogCancel,
-} from "@/components/ui/alert-dialog";
-import { toast } from "sonner";
+  AlertDialogCancel
+} from "@/components/ui/alert-dialog"
+import { toast } from "sonner"
 import {
   Tooltip,
   TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { professionalTags } from "./tags";
-import { Link } from "react-router-dom";
+  TooltipTrigger
+} from "@/components/ui/tooltip"
+import { professionalTags } from "./tags"
+import { Link } from "react-router-dom"
 import {
   BadgeCheck,
   Camera,
@@ -34,32 +34,32 @@ import {
   LucideSave,
   Plus,
   SquareArrowOutUpRight,
-  User2,
-} from "lucide-react";
-import { ChangeEventHandler, useState, useRef, useMemo } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import ProfessionalProfilePreview from "../../ProfessionalProfile/ProfessionalProfilePreview";
-import { useCallback } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { supabase } from "@/integrations/supabase/client";
-import { saveProfile, ProfileForm } from "@/integrations/supabase/profile";
-import Donut from "../Referrals/Donut";
-import ProfileSkeletonLoader from "./ProfileSkeletonLoader";
-import { useEffect } from "react";
-import { useProfessionalProfile } from "@/hooks/use-professional-profile";
-import { useReviews } from "@/hooks/user-reviews";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import useUser from "@/hooks/use-user";
+  User2
+} from "lucide-react"
+import { ChangeEventHandler, useState, useRef, useMemo } from "react"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
+import ProfessionalProfilePreview from "../../ProfessionalProfile/ProfessionalProfilePreview"
+import { useCallback } from "react"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { supabase } from "@/integrations/supabase/client"
+import { saveProfile, ProfileForm } from "@/integrations/supabase/profile"
+import Donut from "../Referrals/Donut"
+import ProfileSkeletonLoader from "./ProfileSkeletonLoader"
+import { useEffect } from "react"
+import { useProfessionalProfile } from "@/hooks/use-professional-profile"
+import { useReviews } from "@/hooks/user-reviews"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import useUser from "@/hooks/use-user"
 
 const BadgeDonut = ({
   src,
   progress,
-  children,
+  children
 }: {
-  src: string;
-  progress: number;
-  children?: React.ReactNode;
+  src: string
+  progress: number
+  children?: React.ReactNode
 }) => (
   <div className="rounded-full select-none bg-neutral-700 size-[60px] p-2 flex items-center justify-center relative">
     <img
@@ -68,7 +68,7 @@ const BadgeDonut = ({
       alt=""
       style={{
         filter: `saturate(${progress})`,
-        transition: "filter 0.35s cubic-bezier(.42,0,.58,1)",
+        transition: "filter 0.35s cubic-bezier(.42,0,.58,1)"
       }}
     />
     <div className="absolute top-0 left-0">
@@ -86,7 +86,7 @@ const BadgeDonut = ({
     )}
     {children}
   </div>
-);
+)
 // ------ End BadgeDonut ------
 
 const profileSchema = z.object({
@@ -99,162 +99,156 @@ const profileSchema = z.object({
   bio: z.string().min(10, { message: "Bio must be at least 10 characters." }),
   tags: z
     .array(z.string())
-    .min(5, { message: "Add at least 5 tags to your profile." }),
-  website: z
-    .string()
-    .url({ message: "Enter a valid URL." })
-    .optional()
-    .or(z.literal("")),
+    .min(2, { message: "Add at least 2 tags to your profile." }),
+  website: z.string().optional().or(z.literal("")),
   instagram: z
-    .string()
-    .url({ message: "Enter a valid URL." })
+    .string({ message: "Enter a valid instagram.com profile url." })
     .optional()
-    .or(z.literal("")),
+    .refine((val) => val.toLowerCase().includes("instagram.com")),
   facebook: z
     .string()
-    .url({ message: "Enter a valid URL." })
-    .optional()
-    .or(z.literal("")),
+    .url({ message: "Enter a valid facebook profile URL." })
+    .refine((val) => val.toLowerCase().includes("facebook.com")),
   tiktok: z
     .string()
     .url({ message: "Enter a valid URL." })
     .optional()
-    .or(z.literal("")),
+    .refine((val) => val.toLowerCase().includes("tiktok.com")),
   twitter: z
     .string()
-    .url({ message: "Enter a valid URL." })
+    .url({ message: "Enter a valid 'x.com' URL." })
     .optional()
-    .or(z.literal("")),
+    .refine((val) => val.toLowerCase().includes("x.com")),
   youtube: z
     .string()
-    .url({ message: "Enter a valid URL." })
+    .url({ message: "Enter a valid youtube URL." })
     .optional()
-    .or(z.literal("")),
+    .refine((val) => val.toLowerCase().includes("youtube.com")),
   slug: z
     .string()
     .min(1, { message: "URL path is required." })
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, {
       message:
-        "Must be lowercase, no spaces, and only letters, numbers, and hyphens.",
-    }),
-});
+        "Must be lowercase, no spaces, and only letters, numbers, and hyphens."
+    })
+})
 
 const Gallery = () => {
-  const [{ user }] = useUser();
-  const [mediaUrls, setMediaUrls] = useState<string[]>([]);
-  const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [deleting, setDeleting] = useState<string | null>(null);
-  const [showAlert, setShowAlert] = useState(false);
-  const [pendingDeleteUrl, setPendingDeleteUrl] = useState<string | null>(null);
+  const [{ user }] = useUser()
+  const [mediaUrls, setMediaUrls] = useState<string[]>([])
+  const [uploading, setUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const [deleting, setDeleting] = useState<string | null>(null)
+  const [showAlert, setShowAlert] = useState(false)
+  const [pendingDeleteUrl, setPendingDeleteUrl] = useState<string | null>(null)
 
   useEffect(() => {
-    const userId = user?.data?.user?.id;
-    if (!userId) return;
+    const userId = user?.data?.user?.id
+    if (!userId) return
     const fetchGallery = async () => {
       const { data, error } = await supabase
         .from("professional_profiles")
         .select("gallery")
         .eq("user_id", userId)
-        .single();
+        .single()
       if (!error && data && Array.isArray(data.gallery)) {
-        setMediaUrls(data.gallery);
+        setMediaUrls(data.gallery)
       }
-    };
-    fetchGallery();
-  }, [user?.id]);
+    }
+    fetchGallery()
+  }, [user?.id])
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const userId = user?.data?.user?.id;
-    if (!e.target.files?.length || !userId) return;
-    setUploading(true);
-    setUploadProgress(0);
+    const userId = user?.data?.user?.id
+    if (!e.target.files?.length || !userId) return
+    setUploading(true)
+    setUploadProgress(0)
 
-    const file = e.target.files[0];
-    const filePath = `${userId}/${Date.now()}_${file.name}`;
+    const file = e.target.files[0]
+    const filePath = `${userId}/${Date.now()}_${file.name}`
 
     const upload = supabase.storage.from("media").upload(filePath, file, {
       cacheControl: "3600",
       upsert: false,
       // @ts-ignore
       onUploadProgress: (ev: ProgressEvent) => {
-        setUploadProgress(Math.round((ev.loaded / ev.total) * 100));
-      },
-    });
+        setUploadProgress(Math.round((ev.loaded / ev.total) * 100))
+      }
+    })
 
-    const { error } = await upload;
+    const { error } = await upload
 
-    setUploading(false);
-    setUploadProgress(0);
+    setUploading(false)
+    setUploadProgress(0)
 
     if (error) {
-      alert("Oops! Upload failed: " + error.message);
-      return;
+      alert("Oops! Upload failed: " + error.message)
+      return
     }
 
-    const publicUrl = `https://jhnoomtsnovadyxgiurt.supabase.co/storage/v1/object/public/media/${filePath}`;
-    setMediaUrls((prev) => [publicUrl, ...prev]);
+    const publicUrl = `https://jhnoomtsnovadyxgiurt.supabase.co/storage/v1/object/public/media/${filePath}`
+    setMediaUrls((prev) => [publicUrl, ...prev])
 
     // Update gallery array in professional_profiles
     const { error: updateError } = await supabase
       .from("professional_profiles" as never)
       .update({
-        gallery: [publicUrl, ...mediaUrls],
+        gallery: [publicUrl, ...mediaUrls]
       })
-      .eq("user_id", userId);
+      .eq("user_id", userId)
 
     if (updateError) {
-      alert("Failed to update gallery: " + updateError.message);
+      alert("Failed to update gallery: " + updateError.message)
     }
-  };
+  }
 
   const confirmDelete = (url: string) => {
-    setPendingDeleteUrl(url);
-    setShowAlert(true);
-  };
+    setPendingDeleteUrl(url)
+    setShowAlert(true)
+  }
 
   const handleDelete = async () => {
-    const userId = user?.data?.user?.id;
-    if (!pendingDeleteUrl || !userId) return;
+    const userId = user?.data?.user?.id
+    if (!pendingDeleteUrl || !userId) return
 
-    const originalMediaUrls = [...mediaUrls];
-    const urlToDelete = pendingDeleteUrl;
+    const originalMediaUrls = [...mediaUrls]
+    const urlToDelete = pendingDeleteUrl
 
     // Optimistically update UI
-    setMediaUrls((prev) => prev.filter((u) => u !== urlToDelete));
-    setDeleting(urlToDelete);
-    setShowAlert(false);
-    setPendingDeleteUrl(null);
+    setMediaUrls((prev) => prev.filter((u) => u !== urlToDelete))
+    setDeleting(urlToDelete)
+    setShowAlert(false)
+    setPendingDeleteUrl(null)
 
     // 1. Delete from storage
-    const nameInFolder = urlToDelete.split(`/${userId}/`).pop() || "";
+    const nameInFolder = urlToDelete.split(`/${userId}/`).pop() || ""
     const { error: storageError } = await supabase.storage
       .from("media")
-      .remove([`${userId}/${nameInFolder}`]);
+      .remove([`${userId}/${nameInFolder}`])
 
     if (storageError) {
-      alert("Failed to delete image from storage: " + storageError.message);
-      setMediaUrls(originalMediaUrls); // Revert
-      setDeleting(null);
-      return;
+      alert("Failed to delete image from storage: " + storageError.message)
+      setMediaUrls(originalMediaUrls) // Revert
+      setDeleting(null)
+      return
     }
 
     // 2. Update gallery array in professional_profiles
-    const updatedGallery = originalMediaUrls.filter((u) => u !== urlToDelete);
+    const updatedGallery = originalMediaUrls.filter((u) => u !== urlToDelete)
     const { error: updateError } = await supabase
       .from("professional_profiles")
       .update({
-        gallery: updatedGallery,
+        gallery: updatedGallery
       })
-      .eq("user_id", userId);
+      .eq("user_id", userId)
 
     if (updateError) {
-      alert("Failed to update gallery: " + updateError.message);
-      setMediaUrls(originalMediaUrls); // Revert
+      alert("Failed to update gallery: " + updateError.message)
+      setMediaUrls(originalMediaUrls) // Revert
     }
 
-    setDeleting(null);
-  };
+    setDeleting(null)
+  }
 
   return (
     <div className="flex gap-4 max-w-full overflow-x-auto">
@@ -296,9 +290,9 @@ const Gallery = () => {
           />
           <button
             onClick={(e) => {
-              e.stopPropagation();
-              e.preventDefault();
-              confirmDelete(url);
+              e.stopPropagation()
+              e.preventDefault()
+              confirmDelete(url)
             }}
             className="absolute top-2 right-2 p-2 bg-black/50 rounded-full opacity-70 group-hover:opacity-100 transition"
             disabled={deleting === url}
@@ -322,8 +316,8 @@ const Gallery = () => {
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={(e) => {
-                e.stopPropagation();
-                handleDelete();
+                e.stopPropagation()
+                handleDelete()
               }}
               disabled={!!deleting}
               className="bg-destructive text-white hover:bg-destructive/90"
@@ -334,17 +328,17 @@ const Gallery = () => {
         </AlertDialogContent>
       </AlertDialog>
     </div>
-  );
-};
+  )
+}
 
 export const Profile = () => {
-  const profilePictureUrl = useStore((s) => s.userProfileUrl);
-  const setProfilePicture = useStore((s) => s.setUserProfileUrl);
-  const name = useStore((s) => s.fullName);
-  const [{ profileData, refetch }, isLoadingProfile] = useProfessionalProfile();
-  const [{ user }] = useUser();
+  const profilePictureUrl = useStore((s) => s.userProfileUrl)
+  const setProfilePicture = useStore((s) => s.setUserProfileUrl)
+  const name = useStore((s) => s.fullName)
+  const [{ profileData, refetch }, isLoadingProfile] = useProfessionalProfile()
+  const [{ user }] = useUser()
 
-  const phoneVerified = user?.data?.user?.user_metadata?.phone_verified;
+  const phoneVerified = user?.data?.user?.user_metadata?.phone_verified
 
   const badges = [
     {
@@ -352,14 +346,14 @@ export const Profile = () => {
       name: "early_supporter",
       src: "/badge-founding-year.png",
       tooltip: "'Early Supporter - Founding Year 2025', 3 Referrals required",
-      rewardName: "the 'Early Supporter' badge",
+      rewardName: "the 'Early Supporter' badge"
     },
     {
       referrals: 5,
       name: "5_referrals",
       src: "/badge-5-refs.png",
       tooltip: "Get a flashy 'Golden Profile Name' after 5 referrals",
-      rewardName: "the 'Golden Profile Name'",
+      rewardName: "the 'Golden Profile Name'"
     },
     {
       referrals: 10,
@@ -367,7 +361,7 @@ export const Profile = () => {
       src: "/badge-10-refs.png",
       tooltip:
         "Win a 'Front Page Showcase' badge with 10 referrals and get featured on our search page!",
-      rewardName: "the 'Front Page Showcase' badge",
+      rewardName: "the 'Front Page Showcase' badge"
     },
     {
       referrals: 20,
@@ -375,29 +369,29 @@ export const Profile = () => {
       src: "/badge-verified-og.png",
       tooltip:
         "Get a permanent 'Verified OG' badge next to your name! (Only in 2025 with 20 referrals)",
-      rewardName: "the permanent 'Verified OG' badge",
-    },
-  ];
+      rewardName: "the permanent 'Verified OG' badge"
+    }
+  ]
 
-  const referralCount = profileData?.referral_count || 0;
+  const referralCount = profileData?.referral_count || 0
 
-  console.log({ profileData, referralCount });
+  console.log({ profileData, referralCount })
 
   const badgesWithProgress = badges.map((badge) => ({
     ...badge,
-    progress: Math.min(1, referralCount / badge.referrals),
-  }));
+    progress: Math.min(1, referralCount / badge.referrals)
+  }))
 
-  const nextBadge = badges.find((badge) => referralCount < badge.referrals);
-  const referralsNeeded = nextBadge ? nextBadge.referrals - referralCount : 0;
+  const nextBadge = badges.find((badge) => referralCount < badge.referrals)
+  const referralsNeeded = nextBadge ? nextBadge.referrals - referralCount : 0
   const badgeMessage = nextBadge
     ? `Give ${referralsNeeded} more referral${
         referralsNeeded > 1 ? "s" : ""
       } to unlock ${nextBadge.rewardName}`
-    : "You've unlocked all referral badges!";
+    : "You've unlocked all referral badges!"
   const { data: reviewsData, isLoading: isLoadingReviews } = useReviews(
-    profileData?.slug,
-  );
+    profileData?.slug
+  )
 
   const reviews = useMemo(() => {
     return (
@@ -407,18 +401,18 @@ export const Profile = () => {
           ...r,
           client_profiles: {
             full_name: r?.client_full_name,
-            profile_picture_url: r?.client_profile_picture,
-          },
+            profile_picture_url: r?.client_profile_picture
+          }
         })) || []
-    );
-  }, [reviewsData]);
-  const [isPublishing, setIsPublishing] = useState(false);
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const [uploadingProfilePic, setUploadingProfilePic] = useState(false);
-  const [slugAvailable, setSlugAvailable] = useState<null | boolean>(null);
-  const [checkingSlug, setCheckingSlug] = useState(false);
-  const slugCheckRef = useRef<number>();
-  const randomNum = useMemo(() => Math.random(), []);
+    )
+  }, [reviewsData])
+  const [isPublishing, setIsPublishing] = useState(false)
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
+  const [uploadingProfilePic, setUploadingProfilePic] = useState(false)
+  const [slugAvailable, setSlugAvailable] = useState<null | boolean>(null)
+  const [checkingSlug, setCheckingSlug] = useState(false)
+  const slugCheckRef = useRef<number>()
+  const randomNum = useMemo(() => Math.random(), [])
 
   const {
     register,
@@ -426,7 +420,7 @@ export const Profile = () => {
     reset,
     watch,
     setValue,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting }
   } = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
@@ -443,56 +437,56 @@ export const Profile = () => {
       facebook: "",
       tiktok: "",
       twitter: "",
-      youtube: "",
-    },
-  });
+      youtube: ""
+    }
+  })
 
-  const fullName = watch("fullName");
-  const slug = watch("slug");
-  const tags = watch("tags");
+  const fullName = watch("fullName")
+  const slug = watch("slug")
+  const tags = watch("tags")
 
   const previewData = {
     ...profileData,
     ...watch(),
     full_name: fullName,
-    profile_picture_url: profilePictureUrl,
-  };
+    profile_picture_url: profilePictureUrl
+  }
 
-  console.log({ previewData });
+  console.log({ previewData })
   // Slug availability check
   useEffect(() => {
     if (slugCheckRef.current) {
-      clearTimeout(slugCheckRef.current);
+      clearTimeout(slugCheckRef.current)
     }
 
     if (!slug || slug === profileData?.slug) {
-      setSlugAvailable(null);
-      setCheckingSlug(false);
-      return;
+      setSlugAvailable(null)
+      setCheckingSlug(false)
+      return
     }
 
-    setCheckingSlug(true);
-    setSlugAvailable(null);
+    setCheckingSlug(true)
+    setSlugAvailable(null)
 
     slugCheckRef.current = window.setTimeout(async () => {
       // check Supabase for slug
       const { data } = await supabase.functions.invoke(
         `check_slug_availability?search=${slug}`,
-        { method: "GET" },
-      );
+        { method: "GET" }
+      )
 
       // if it's available OR if it's taken by the current user
-      const isAvailable = data?.isAvailable || data?.id === profileData?.id;
-      setSlugAvailable(isAvailable);
-      setCheckingSlug(false);
-    }, 600);
+      const isAvailable = data?.isAvailable || data?.id === profileData?.id
+      setSlugAvailable(isAvailable)
+      setCheckingSlug(false)
+    }, 600)
 
     return () => {
       if (slugCheckRef.current) {
-        clearTimeout(slugCheckRef.current);
+        clearTimeout(slugCheckRef.current)
       }
-    };
-  }, [slug, profileData?.id, profileData?.slug]);
+    }
+  }, [slug, profileData?.id, profileData?.slug])
 
   // Hydrate form when data arrives
   useEffect(() => {
@@ -515,60 +509,60 @@ export const Profile = () => {
         facebook: profileData.facebook || "",
         tiktok: profileData.tiktok || "",
         twitter: profileData.twitter || "",
-        youtube: profileData.youtube || "",
-      });
+        youtube: profileData.youtube || ""
+      })
     }
-  }, [profileData, reset]);
+  }, [profileData, reset])
 
   const onSubmit = async (data: ProfileForm) => {
-    const { data: userData, error: userError } = await supabase.auth.getUser();
+    const { data: userData, error: userError } = await supabase.auth.getUser()
     if (userError || !userData?.user?.id) {
       // You can display an error notification here
-      console.error("User not authenticated");
-      return;
+      console.error("User not authenticated")
+      return
     }
-    const userId = userData.user.id;
-    setIsPublishing(true);
-    const { error } = await saveProfile(data, userId);
-    setIsPublishing(false);
+    const userId = userData.user.id
+    setIsPublishing(true)
+    const { error } = await saveProfile(data, userId)
+    setIsPublishing(false)
     if (error) {
       // Handle the error (show UI notification if desired)
-      console.error("Failed to save profile:", error.message);
-      alert("Failed to save profile: " + error.message);
+      console.error("Failed to save profile:", error.message)
+      alert("Failed to save profile: " + error.message)
     } else {
       // Optionally show success notification!
-      refetch();
+      refetch()
 
-      toast("Profile published!");
+      toast("Profile published!")
     }
-  };
+  }
 
   // SKELETON LOADER
   if (isLoadingProfile) {
-    return <ProfileSkeletonLoader />;
+    return <ProfileSkeletonLoader />
   }
 
   const getNameFallback = (str?: string) =>
-    str ? str.split(" ")[0][0] + str.split(" ")?.[1]?.[0] : "Default";
+    str ? str.split(" ")[0][0] + str.split(" ")?.[1]?.[0] : "Default"
 
   const handleProfileUpload: ChangeEventHandler<HTMLInputElement> = async (
-    e,
+    e
   ) => {
-    setUploadingProfilePic(true);
-    const file = e.target.files[0];
-    const userId = user?.data?.user?.id;
-    const ext = file.name.split(".").pop();
-    const filename = `${userId}/avatar.${ext}`;
+    setUploadingProfilePic(true)
+    const file = e.target.files[0]
+    const userId = user?.data?.user?.id
+    const ext = file.name.split(".").pop()
+    const filename = `${userId}/avatar.${ext}`
 
     const { error } = await supabase.storage
       .from("profile_pictures")
-      .upload(filename, file, { upsert: true, cacheControl: "3600" });
+      .upload(filename, file, { upsert: true, cacheControl: "3600" })
 
     const { data } = await supabase.storage
       .from("profile_pictures")
-      .getPublicUrl(filename);
+      .getPublicUrl(filename)
 
-    const publicUrl = data?.publicUrl;
+    const publicUrl = data?.publicUrl
 
     if (publicUrl) {
       const { error } = await supabase
@@ -576,24 +570,24 @@ export const Profile = () => {
         .upsert(
           {
             profile_picture_url: publicUrl,
-            user_id: userId,
+            user_id: userId
           },
-          { onConflict: "user_id" },
-        );
+          { onConflict: "user_id" }
+        )
 
-      setProfilePicture(publicUrl);
+      setProfilePicture(publicUrl)
 
-      toast("Updated profile picture!");
+      toast("Updated profile picture!")
       if (error) {
-        alert("Error when uploading: " + error.message);
+        alert("Error when uploading: " + error.message)
       } else {
-        toast("Profile picture updated!");
+        toast("Profile picture updated!")
       }
     }
 
-    setUploadingProfilePic(false);
-    refetch();
-  };
+    setUploadingProfilePic(false)
+    refetch()
+  }
 
   return (
     <div className="w-full h-full">
@@ -693,8 +687,8 @@ export const Profile = () => {
                   .toLowerCase()
                   .replace(/[^\w\s-]/g, "")
                   .replace(/\s+/g, "-")
-                  .replace(/-+/g, "-");
-                setValue("slug", val, { shouldValidate: true });
+                  .replace(/-+/g, "-")
+                setValue("slug", val, { shouldValidate: true })
               }}
             />
             {checkingSlug ? (
@@ -813,7 +807,7 @@ export const Profile = () => {
                       setValue("state", option?.label || "")
                     }
                     value={usStates.find(
-                      (option) => option.label === watch("state"),
+                      (option) => option.label === watch("state")
                     )}
                     unstyled
                     options={usStates}
@@ -828,7 +822,7 @@ export const Profile = () => {
                       groupHeading: () => "text-base font-medium mb-2 ",
                       menuList: () => "space-y-2",
                       option: () =>
-                        "hover:text-white mb-1 text-white/70 rounded-md",
+                        "hover:text-white mb-1 text-white/70 rounded-md"
                     }}
                   />
                   {errors.state && (
@@ -851,14 +845,14 @@ export const Profile = () => {
               unstyled
               value={[
                 ...professionalTags[0].options,
-                ...professionalTags[1].options,
+                ...professionalTags[1].options
               ].filter((item) => tags.includes(item.value))}
               // getOptionValue={(v) => v.value}
               // getOptionLabel={(v) => v?.}
               onChange={(v) =>
                 setValue(
                   "tags",
-                  v.map((i) => i.value),
+                  v.map((i) => i.value)
                 )
               }
               className="bg-white/10 text-sm mt-2 rounded-md"
@@ -868,7 +862,7 @@ export const Profile = () => {
                 menu: () => "bg-neutral-800 p-3",
                 groupHeading: () => "text-base font-medium mb-2 ",
                 menuList: () => "space-y-2",
-                option: () => "hover:text-white mb-1 text-white/70 rounded-md",
+                option: () => "hover:text-white mb-1 text-white/70 rounded-md"
               }}
               options={professionalTags}
             />
@@ -1053,5 +1047,5 @@ export const Profile = () => {
         />
       )}
     </div>
-  );
-};
+  )
+}
