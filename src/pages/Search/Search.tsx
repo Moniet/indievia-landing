@@ -1,19 +1,17 @@
 import { supabase } from "@/integrations/supabase/client";
-import {
-  ArrowUpRight,
-  ChevronDown,
-  Loader2,
-  LucideSearch,
-  MapPin,
-  Search,
-} from "lucide-react";
+import { Loader2, MapPin, Search } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Select from "react-select/async";
-import { SearchResults } from "./SearchResults";
 import { toast } from "sonner";
+import { professionalTags } from "../ProfessionalDashboard/Profile/tags";
+import { SearchResults } from "./SearchResults";
+
+// Flatten the professionalTags to a simple array of strings (labels)
+const TAGS = professionalTags.flatMap((group) =>
+  group.options.map((option) => option.label),
+);
 
 export const SearchInput = ({ onSearch = () => {}, onClear = () => {} }) => {
-  // const [search, setSearch] = useState("")
   const [error, setError] = useState<{ location?: string; search?: string }>({
     location: "",
   });
@@ -25,6 +23,11 @@ export const SearchInput = ({ onSearch = () => {}, onClear = () => {} }) => {
   const [searchAttempted, setSearchAttempted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isFocussed, setIsFocussed] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // State for tag suggestions
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const fetchCityState = async (query: string) => {
     clearTimeout(timeout.current);
@@ -37,7 +40,7 @@ export const SearchInput = ({ onSearch = () => {}, onClear = () => {} }) => {
         );
 
         resolve(
-          data.map((d) => ({
+          data.map((d: any) => ({
             label: `${d.name}, ${d.state}`,
             value: `${d.name}-${d.state}`,
           })),
@@ -83,15 +86,62 @@ export const SearchInput = ({ onSearch = () => {}, onClear = () => {} }) => {
   );
 
   const handleSearch = async () => {
+    setShowSuggestions(false);
     setSearchAttempted(true);
     makeSearch(search || "");
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearch(value);
+
+    if (!value) {
+      onClear();
+      setShowSuggestions(false);
+      return;
+    }
+
+    const words = value.split(" ");
+    const currentWord = words[words.length - 1].toLowerCase();
+
+    if (currentWord) {
+      const filteredSuggestions = TAGS.filter((tag) =>
+        tag.toLowerCase().startsWith(currentWord),
+      );
+      setSuggestions(filteredSuggestions);
+      setShowSuggestions(filteredSuggestions.length > 0);
+    } else {
+      setShowSuggestions(false);
+    }
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    const words = search.split(" ");
+    words[words.length - 1] = suggestion;
+    setSearch(words.join(" ") + " ");
+    setShowSuggestions(false);
+    inputRef.current?.focus();
   };
 
   return (
     <>
       <div
-        onFocus={() => setIsFocussed(true)}
-        onBlur={() => setIsFocussed(false)}
+        onFocus={() => {
+          setIsFocussed(true);
+          // When focusing the container (e.g., by clicking the input),
+          // re-evaluate if suggestions should be shown.
+          if (search) {
+            handleSearchChange({ target: { value: search } } as any);
+          }
+        }}
+        onBlur={() => {
+          // We use a short timeout to allow click events on suggestions to register
+          // before we hide the dropdown.
+          setTimeout(() => {
+            setShowSuggestions(false);
+            setIsFocussed(false);
+          }, 150);
+        }}
         onKeyDownCapture={(e) => {
           if (isFocussed && e.key == "Enter") {
             handleSearch();
@@ -135,7 +185,7 @@ export const SearchInput = ({ onSearch = () => {}, onClear = () => {} }) => {
                     { label: "Atlanta, Georgia", value: "Atlanta, Georgia" },
                   ]}
                   value={locationValue}
-                  onChange={(v) => {
+                  onChange={(v: any) => {
                     localStorage.setItem("location-pref", v.label);
                     setLocation(v.label);
                     setError({ ...error, location: "" });
@@ -161,20 +211,33 @@ export const SearchInput = ({ onSearch = () => {}, onClear = () => {} }) => {
           </div>
         </div>
         <div className="flex flex-1 max-md:rounded-full max-md:bg-neutral-800 max-md:focus-within:border-neutral-500 max-md:border border-neutral-700 ">
-          <div className="flex-1">
+          <div className="flex-1 relative">
             <input
+              ref={inputRef}
               value={search}
-              onChange={(e) => {
-                const value = e.target.value;
-                setSearch(value);
-
-                if (!value) {
-                  onClear();
-                }
-              }}
+              onChange={handleSearchChange}
+              autoComplete="off"
               placeholder="tattoo, ear piercing, tongue piercing, in Tampa"
               className="size-full font-light text-sm bg-transparent px-5 border-none focus:outline-none placeholder:text-white/50 placeholder:font-light"
             />
+            {showSuggestions && suggestions.length > 0 && (
+              <div className="absolute z-10 w-full top-full mt-2 bg-neutral-800 border border-neutral-700 rounded-lg shadow-xl">
+                <ul className="divide-y divide-neutral-700 max-h-60 overflow-y-auto">
+                  {suggestions.slice(0, 7).map((tag) => (
+                    <li
+                      key={tag}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        handleSuggestionClick(tag);
+                      }}
+                      className="px-4 py-2 text-sm text-white/70 cursor-pointer hover:bg-neutral-700 hover:text-white transition-colors"
+                    >
+                      {tag}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
             <div className="text-xs mt-2 text-red-500 ml-5 empty:hidden">
               {error.search}
             </div>
