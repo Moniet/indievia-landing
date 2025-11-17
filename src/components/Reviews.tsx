@@ -891,7 +891,7 @@ const Reviews = ({
 
             <div className="flex justify-center"></div>
           </div>
-          {(!reviews || !reviews?.length) && (
+          {!reviews?.length && (
             <div className="w-full h-full space-y-10  relative">
               <div className="space-y-10 blur-sm  select-none pointer-events-none">
                 <ReviewItem
@@ -974,7 +974,7 @@ const Reviews = ({
             </div>
           )}
         </div>
-        {hasMoreReviews && (
+        {!!hasMoreReviews && (
           <div className="flex justify-center py-5">
             <Button
               onClick={onClickViewMore}
