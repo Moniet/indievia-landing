@@ -1,25 +1,25 @@
-import useUser from "@/hooks/use-user";
-import { supabase } from "@/integrations/supabase/client";
-import { Heart, LucideAward, LucideMedal, MapPin, Star } from "lucide-react";
-import { useState } from "react";
-import { Noise, NoiseContent } from "react-noise";
-import "react-noise/css";
-import { Link, useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+import useUser from "@/hooks/use-user"
+import { supabase } from "@/integrations/supabase/client"
+import { Heart, LucideAward, LucideMedal, MapPin, Star } from "lucide-react"
+import { useState } from "react"
+import { Noise, NoiseContent } from "react-noise"
+import "react-noise/css"
+import { Link, useNavigate } from "react-router-dom"
+import { toast } from "sonner"
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip"
 
 type Props = {
-  id: string;
-  profile_picture_url: string;
-  full_name: string;
-  slug: string;
-  position: string;
-  avg_rating: string;
-  is_favorite: boolean;
-  city: string;
-  state: string;
-  badge: string;
-};
+  id: string
+  profile_picture_url: string
+  full_name: string
+  slug: string
+  position: string
+  avg_rating: string
+  is_favorite: boolean
+  city: string
+  state: string
+  badge: string
+}
 
 const defaultData: Props = {
   is_favorite: false,
@@ -32,8 +32,8 @@ const defaultData: Props = {
   avg_rating: "4.5",
   slug: "",
   badge: "",
-  id: "1",
-};
+  id: "1"
+}
 
 const ProfessionalDisplayCard = (props: Props) => {
   const {
@@ -46,47 +46,48 @@ const ProfessionalDisplayCard = (props: Props) => {
     city,
     slug,
     badge,
-    state,
-  } = props?.full_name ? props : defaultData;
+    state
+  } = props?.full_name ? props : defaultData
 
-  const nav = useNavigate();
-  const [favorite, setFavorite] = useState(is_favorite);
-  const [{ user }] = useUser();
-  const userRole = user?.data?.user?.user_metadata?.role;
+  const nav = useNavigate()
+  const [favorite, setFavorite] = useState(is_favorite)
+  const [{ user }] = useUser()
+  const userRole = user?.data?.user?.user_metadata?.role
 
   const handleFavorite = async () => {
-    setFavorite(!favorite);
+    setFavorite(!favorite)
 
     if (!favorite) {
       const { error, data } = await supabase.functions.invoke(
         "favorite/" + id,
         {
-          method: "POST",
-        },
-      );
+          method: "POST"
+        }
+      )
 
       if (error) {
-        setFavorite(false);
-        toast.error("Oops! We couldn't favorite this professional.");
+        setFavorite(false)
+        toast.error("Oops! We couldn't favorite this professional.")
       }
-      return;
+      return
     }
 
     try {
       const { error } = await supabase.functions.invoke("favorite/" + id, {
-        method: "DELETE",
-      });
+        method: "DELETE"
+      })
       if (error) {
-        setFavorite(false);
-        toast.error("Oops! We couldn't favorite this professional.");
+        setFavorite(false)
+        toast.error("Oops! We couldn't favorite this professional.")
       }
-      return;
+      return
     } catch (e) {
-      setFavorite(favorite);
+      setFavorite(favorite)
     }
-  };
+  }
 
-  const year = new Date().getFullYear();
+  const year = new Date().getFullYear()
+  const rating = Number(avg_rating).toFixed(1)
 
   return (
     <div
@@ -111,9 +112,9 @@ const ProfessionalDisplayCard = (props: Props) => {
         </div>
         <div>
           <section className="text-base font-profile-header flex items-center w-full justify-beteween">
-            <div className="w-full flex gap-2 pt-2 items-center">
+            <div className="w-full flex gap-2 pt-2 items-center max-w-full overflow-hidden">
               <h2
-                className={`text-lg w-fit ${
+                className={`text-lg w-fit  ${
                   badge === "10_referrals" ? "bg-anim" : ""
                 }`}
               >
@@ -168,9 +169,15 @@ const ProfessionalDisplayCard = (props: Props) => {
                 </Tooltip>
               )}
             </div>
-            <div className="flex items-center font-profile-header text-sm mt-2">
-              <Star className="fill-brand stroke-none size-4 mr-2" />{" "}
-              {Number(avg_rating).toFixed(1)}
+            <div className="flex items-center font-profile-header text-sm mt-2 w-fit flex-shrink-0">
+              <Star className="fill-brand stroke-none size-4 min-w-4 mr-2" />{" "}
+              {rating === "0.0" ? (
+                <span className="text-xs font-normal min-w-fit text-white/80">
+                  No reviews
+                </span>
+              ) : (
+                rating
+              )}
             </div>
           </section>
           <section className="text-sm flex items-center">
@@ -184,8 +191,8 @@ const ProfessionalDisplayCard = (props: Props) => {
         {(!user || userRole === "client") && (
           <button
             onClick={(e) => {
-              e.stopPropagation();
-              handleFavorite();
+              e.stopPropagation()
+              handleFavorite()
             }}
             className="absolute z-10 cursor-pointer top-3 rounded-full bg-white/20 right-3 p-2 hover:bg-white/40"
           >
@@ -198,7 +205,7 @@ const ProfessionalDisplayCard = (props: Props) => {
         )}
       </article>
     </div>
-  );
-};
+  )
+}
 
-export default ProfessionalDisplayCard;
+export default ProfessionalDisplayCard
