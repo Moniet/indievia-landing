@@ -66,7 +66,9 @@ const ProfessionalProfile = () => {
           </div>
         </div>
       </Layout>
-      <GlobalFooter />
+      <Layout>
+        <GlobalFooter />
+      </Layout>
     </>
   );
 };
