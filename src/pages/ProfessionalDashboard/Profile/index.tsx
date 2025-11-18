@@ -107,21 +107,18 @@ const profileSchema = z.object({
     .refine((val) => val.toLowerCase().includes("instagram.com")),
   facebook: z
     .string()
-    .url({ message: "Enter a valid facebook profile URL." })
-    .refine((val) => val.toLowerCase().includes("facebook.com")),
+    .refine((val) => val.toLowerCase().includes("facebook.com"))
+    .optional(),
   tiktok: z
     .string()
-    .url({ message: "Enter a valid URL." })
     .optional()
     .refine((val) => val.toLowerCase().includes("tiktok.com")),
   twitter: z
     .string()
-    .url({ message: "Enter a valid 'x.com' URL." })
     .optional()
     .refine((val) => val.toLowerCase().includes("x.com")),
   youtube: z
     .string()
-    .url({ message: "Enter a valid youtube URL." })
     .optional()
     .refine((val) => val.toLowerCase().includes("youtube.com")),
   slug: z
