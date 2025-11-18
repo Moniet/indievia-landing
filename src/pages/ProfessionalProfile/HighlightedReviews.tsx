@@ -98,7 +98,7 @@ const HighlightedReviews = ({
     if (!reviews || reviews.length === 0) {
       // Render empty state if no reviews and not loading
       return (
-        <div className="flex flex-col items-center justify-center p-10 text-white/50 min-h-[200px] min-w-[500px]">
+        <div className="flex flex-col items-center mx-auto justify-center p-10 text-white/50 min-h-[200px] min-w-[500px]">
           <Quote className="size-10 mb-4" />
           <p className="text-lg">No reviews yet.</p>
           <p className="text-sm mt-1">Be the first to leave a review!</p>
