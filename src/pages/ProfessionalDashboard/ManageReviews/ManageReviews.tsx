@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef, useEffect } from "react"
+import React, { useMemo, useState, useRef, useEffect } from "react";
 import {
   Search,
   Star,
@@ -12,24 +12,24 @@ import {
   PenIcon,
   Ellipsis,
   PencilRulerIcon,
-  LucideInfo
-} from "lucide-react"
-import { motion, AnimatePresence, useUnmountEffect } from "framer-motion"
+  LucideInfo,
+} from "lucide-react";
+import { motion, AnimatePresence, useUnmountEffect } from "framer-motion";
 
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu"
-import { useReviewStats } from "./useReviewsStats"
-import { useReviews } from "./useReviews"
-import { Separator } from "@/components/ui/separator"
-import { useReviewReply } from "@/hooks/use-review-reply"
-import { useProfessionalProfile } from "@/hooks/use-professional-profile"
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useReviewStats } from "./useReviewsStats";
+import { useReviews } from "./useReviews";
+import { Separator } from "@/components/ui/separator";
+import { useReviewReply } from "@/hooks/use-review-reply";
+import { useProfessionalProfile } from "@/hooks/use-professional-profile";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,79 +38,79 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle
-} from "@/components/ui/alert-dialog"
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle
-} from "@/components/ui/dialog"
-import { Textarea } from "@/components/ui/textarea"
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Empty,
   EmptyDescription,
   EmptyHeader,
-  EmptyTitle
-} from "@/components/ui/empty"
-import { ReportingReviewDialog } from "@/components/ReportReviewDialog"
-import useUser from "@/hooks/use-user"
-import { cn } from "@/lib/utils"
+  EmptyTitle,
+} from "@/components/ui/empty";
+import { ReportingReviewDialog } from "@/components/ReportReviewDialog";
+import useUser from "@/hooks/use-user";
+import { cn } from "@/lib/utils";
 
 type Review = {
-  review: string
-  rating: string
-  reply_id?: string
-  client_id: string
-  created_at: string
-  profile_picture_url: string
-  id: string
-  reply_text?: string
-  full_name: string
-  gallery?: string[]
-  is_reported?: boolean
-}
+  review: string;
+  rating: string;
+  reply_id?: string;
+  client_id: string;
+  created_at: string;
+  profile_picture_url: string;
+  id: string;
+  reply_text?: string;
+  full_name: string;
+  gallery?: string[];
+  is_reported?: boolean;
+};
 
-type SortKey = "newest" | "oldest" | "highest" | "lowest"
+type SortKey = "newest" | "oldest" | "highest" | "lowest";
 
 const formatDate = (iso: string) => {
-  const d = new Date(iso)
-  const today = new Date()
-  const yesterday = new Date()
-  yesterday.setDate(yesterday.getDate() - 1)
+  const d = new Date(iso);
+  const today = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
 
   const isToday =
     d.getFullYear() === today.getFullYear() &&
     d.getMonth() === today.getMonth() &&
-    d.getDate() === today.getDate()
+    d.getDate() === today.getDate();
 
   if (isToday) {
-    const hh = String(d.getHours()).padStart(2, "0")
-    const mm = String(d.getMinutes()).padStart(2, "0")
-    return `Today | ${hh}:${mm}`
+    const hh = String(d.getHours()).padStart(2, "0");
+    const mm = String(d.getMinutes()).padStart(2, "0");
+    return `Today | ${hh}:${mm}`;
   }
 
   const isYesterday =
     d.getFullYear() === yesterday.getFullYear() &&
     d.getMonth() === yesterday.getMonth() &&
-    d.getDate() === yesterday.getDate()
+    d.getDate() === yesterday.getDate();
 
   if (isYesterday) {
-    return "Yesterday"
+    return "Yesterday";
   }
 
   // dd-mm-yyyy
-  return d.toDateString().slice(0, 10)
-}
+  return d.toDateString().slice(0, 10);
+};
 
 const Stars = ({
   rating,
-  className = ""
+  className = "",
 }: {
-  rating: number
-  className?: string
+  rating: number;
+  className?: string;
 }) => {
   return (
     <div className="flex items-center gap-1">
@@ -123,26 +123,26 @@ const Stars = ({
                 ? "fill-yellow-500 stroke-yellow-500 stroke-none"
                 : "fill-white/20 stroke-none"
             }`,
-            className
+            className,
           )}
         />
       ))}
     </div>
-  )
-}
+  );
+};
 
 const DistributionRow = ({
   stars,
   count,
   total,
-  color = "bg-brand"
+  color = "bg-brand",
 }: {
-  stars: 1 | 2 | 3 | 4 | 5
-  count: number
-  total: number
-  color?: string
+  stars: 1 | 2 | 3 | 4 | 5;
+  count: number;
+  total: number;
+  color?: string;
 }) => {
-  const pct = total > 0 ? Math.round((count / total) * 100) : 0
+  const pct = total > 0 ? Math.round((count / total) * 100) : 0;
   return (
     <div className="flex items-center gap-3">
       <div className="flex items-center gap-1 w-[42px] justify-end">
@@ -157,11 +157,11 @@ const DistributionRow = ({
       </div>
       <div className="w-8 text-xs text-white/70">{count}</div>
     </div>
-  )
-}
+  );
+};
 
 const GalleryImage = ({ src }: { src: string }) => {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
     <div className="size-[100px] min-w-[100px] cursor-pointer select-none">
@@ -190,7 +190,7 @@ const GalleryImage = ({ src }: { src: string }) => {
             animate={{ opacity: 1, scale: 1 }}
             className="w-fit h-fit z-[10000001] fixed top-1/2 left-1/2 "
             style={{
-              transformOrigin: "left center"
+              transformOrigin: "left center",
             }}
           >
             <img
@@ -201,50 +201,50 @@ const GalleryImage = ({ src }: { src: string }) => {
         )}
       </AnimatePresence>
     </div>
-  )
-}
+  );
+};
 
 const ReviewGallery = ({ gallery }: { gallery: string[] }) => {
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const [canScrollLeft, setCanScrollLeft] = useState(false)
-  const [canScrollRight, setCanScrollRight] = useState(true)
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
 
   const checkForScroll = () => {
-    const el = scrollRef.current
+    const el = scrollRef.current;
     if (el) {
-      const isScrollable = el.scrollWidth > el.clientWidth
-      setCanScrollLeft(el.scrollLeft > 0)
+      const isScrollable = el.scrollWidth > el.clientWidth;
+      setCanScrollLeft(el.scrollLeft > 0);
       setCanScrollRight(
-        isScrollable && el.scrollLeft < el.scrollWidth - el.clientWidth
-      )
+        isScrollable && el.scrollLeft < el.scrollWidth - el.clientWidth,
+      );
     }
-  }
+  };
 
   useEffect(() => {
-    const el = scrollRef.current
+    const el = scrollRef.current;
     if (el) {
-      checkForScroll()
-      el.addEventListener("scroll", checkForScroll, { passive: true })
-      window.addEventListener("resize", checkForScroll)
+      checkForScroll();
+      el.addEventListener("scroll", checkForScroll, { passive: true });
+      window.addEventListener("resize", checkForScroll);
       return () => {
-        el.removeEventListener("scroll", checkForScroll)
-        window.removeEventListener("resize", checkForScroll)
-      }
+        el.removeEventListener("scroll", checkForScroll);
+        window.removeEventListener("resize", checkForScroll);
+      };
     }
-  }, [gallery])
+  }, [gallery]);
 
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {
       const scrollAmount =
         direction === "left"
           ? -scrollRef.current.clientWidth / 2
-          : scrollRef.current.clientWidth / 2
-      scrollRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" })
+          : scrollRef.current.clientWidth / 2;
+      scrollRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
     }
-  }
+  };
 
   if (!gallery || gallery.length === 0) {
-    return null
+    return null;
   }
 
   return (
@@ -277,33 +277,33 @@ const ReviewGallery = ({ gallery }: { gallery: string[] }) => {
         </Button>
       )}
     </div>
-  )
-}
+  );
+};
 
 const EditReplyDialog = ({
   open,
   onOpenChange,
   review,
-  refetchReviews
+  refetchReviews,
 }: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  review: Review
-  refetchReviews?: () => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  review: Review;
+  refetchReviews?: () => void;
 }) => {
-  const [replyText, setReplyText] = useState(review.reply_text || "")
+  const [replyText, setReplyText] = useState(review.reply_text || "");
   const { editReply, isEditing, editError } = useReviewReply({
     onEdit: () => {
-      refetchReviews?.()
-      onOpenChange(false)
-    }
-  })
+      refetchReviews?.();
+      onOpenChange(false);
+    },
+  });
 
   const handleSubmit = () => {
     if (review.reply_id) {
-      editReply({ id: review.reply_id, reply_text: replyText })
+      editReply({ id: review.reply_id, reply_text: replyText });
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -346,37 +346,37 @@ const EditReplyDialog = ({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
-}
+  );
+};
 
 const ReviewCard = ({
   review,
-  refetchReviews
+  refetchReviews,
 }: {
-  review: Review
-  refetchReviews?: () => void
+  review: Review;
+  refetchReviews?: () => void;
 }) => {
-  const [replying, setReplying] = useState(false)
-  const [replyText, setReplyText] = useState("")
-  const [{ profileData }] = useProfessionalProfile()
-  const [showDeleteAlert, setShowDeleteAlert] = useState(false)
-  const [showEditDialog, setShowEditDialog] = useState(false)
+  const [replying, setReplying] = useState(false);
+  const [replyText, setReplyText] = useState("");
+  const [{ profileData }] = useProfessionalProfile();
+  const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
   const {
     postReply,
     isLoading: isReplying,
     error: replyError,
     deleteReply,
-    isDeleting
+    isDeleting,
   } = useReviewReply({
     onSubmit: () => {
-      refetchReviews?.()
-      setReplying(false)
+      refetchReviews?.();
+      setReplying(false);
     },
     onDelete: () => {
-      refetchReviews?.()
-    }
-  })
+      refetchReviews?.();
+    },
+  });
 
   return (
     <div className="rounded-xl w-full max-w-[750px] border border-white/5 bg-[#18181A] p-4 sm:p-5 overflow-hidden">
@@ -439,7 +439,7 @@ const ReviewCard = ({
               <Button
                 className="h-8 rounded-full px-4 text-xs bg-[#EE714E]  hover:bg-[#ED613A] transition-colors duration-300 font-light"
                 onClick={() => {
-                  setReplying(true)
+                  setReplying(true);
                 }}
               >
                 Reply
@@ -461,8 +461,8 @@ const ReviewCard = ({
                   onClick={() => {
                     postReply({
                       reply_to_id: review?.id,
-                      reply_text: replyText
-                    })
+                      reply_text: replyText,
+                    });
                   }}
                   disabled={isReplying}
                 >
@@ -504,7 +504,7 @@ const ReviewCard = ({
                     <DropdownMenuItem asChild>
                       <button
                         onClick={() => {
-                          setShowDeleteAlert(true)
+                          setShowDeleteAlert(true);
                         }}
                         className="flex w-full  hover:!bg-red-500 gap-2 text-xs items-center text-red-500"
                       >
@@ -539,9 +539,9 @@ const ReviewCard = ({
                         variant="outline"
                         className="bg-white/10 hover:bg-white/20 text-white border-white/20"
                         onClick={(e) => {
-                          e.stopPropagation()
-                          e.preventDefault()
-                          setShowDeleteAlert(false)
+                          e.stopPropagation();
+                          e.preventDefault();
+                          setShowDeleteAlert(false);
                         }}
                       >
                         Cancel
@@ -551,9 +551,9 @@ const ReviewCard = ({
                         className="bg-red-600 hover:bg-red-700 text-white"
                         disabled={isDeleting}
                         onClick={(e) => {
-                          e.stopPropagation()
+                          e.stopPropagation();
                           if (review.reply_id) {
-                            deleteReply(review.reply_id)
+                            deleteReply(review.reply_id);
                           }
                         }}
                       >
@@ -573,8 +573,8 @@ const ReviewCard = ({
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 const ReviewCardSkeleton = () => {
   return (
@@ -599,8 +599,8 @@ const ReviewCardSkeleton = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 const StatsSkeleton = () => {
   return (
@@ -625,13 +625,13 @@ const StatsSkeleton = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 const ManageReviews = () => {
-  const [_, isLoadingUser] = useUser()
-  const [query, setQuery] = useState("")
-  const [sort, setSort] = useState<SortKey>("newest")
+  const [_, isLoadingUser] = useUser();
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<SortKey>("newest");
   const {
     data: reviews,
     hasNextPage: hasMoreReviews,
@@ -639,46 +639,46 @@ const ManageReviews = () => {
     refetch: refetchReviews,
     isRefetching,
     isFetchingNextPage: isFetchingMoreReviews,
-    isLoading: isLoadingReviews
-  } = useReviews()
+    isLoading: isLoadingReviews,
+  } = useReviews();
 
   const {
     data: reviewStats,
     avgRating,
     totalReviewCount = 0,
-    isLoading: isLoadingStats
-  } = useReviewStats()
+    isLoading: isLoadingStats,
+  } = useReviewStats();
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase()
+    const q = query.trim().toLowerCase();
     const allReviews =
-      reviews?.pages.flatMap((page) => page.data?.reviews) ?? []
-    let arr: Review[] = [...allReviews].filter(Boolean)
+      reviews?.pages.flatMap((page) => page.data?.reviews) ?? [];
+    let arr: Review[] = [...allReviews].filter(Boolean);
 
     if (q) {
       arr = arr.filter(
         (r) =>
           r.full_name.toLowerCase().includes(q) ||
           r.review.toLowerCase().includes(q) ||
-          formatDate(r?.created_at).toLowerCase().includes(q)
-      )
+          formatDate(r?.created_at).toLowerCase().includes(q),
+      );
     }
     switch (sort) {
       case "newest":
-        arr.sort((a, b) => +new Date(b?.created_at) - +new Date(a?.created_at))
-        break
+        arr.sort((a, b) => +new Date(b?.created_at) - +new Date(a?.created_at));
+        break;
       case "oldest":
-        arr.sort((a, b) => +new Date(a?.created_at) - +new Date(b?.created_at))
-        break
+        arr.sort((a, b) => +new Date(a?.created_at) - +new Date(b?.created_at));
+        break;
       case "highest":
-        arr.sort((a, b) => parseInt(b.rating, 10) - parseInt(a.rating, 10))
-        break
+        arr.sort((a, b) => parseInt(b.rating, 10) - parseInt(a.rating, 10));
+        break;
       case "lowest":
-        arr.sort((a, b) => parseInt(a.rating, 10) - parseInt(b.rating, 10))
-        break
+        arr.sort((a, b) => parseInt(a.rating, 10) - parseInt(b.rating, 10));
+        break;
     }
-    return arr.filter(Boolean)
-  }, [query, sort, reviews])
+    return arr.filter(Boolean);
+  }, [query, sort, reviews]);
 
   return (
     <div className="w-full text-white md:px-3">
@@ -810,7 +810,8 @@ const ManageReviews = () => {
             )}
             {!isLoadingReviews &&
               !isLoadingStats &&
-              (!reviews || !reviews?.pages?.length) && (
+              filtered.length === 0 &&
+              !query && (
                 <Empty className="max-w-[750px] border bg-white/5">
                   <EmptyHeader>
                     <LucideInfo />
@@ -822,7 +823,7 @@ const ManageReviews = () => {
                   </EmptyHeader>
                 </Empty>
               )}
-            {!hasMoreReviews && (
+            {!hasMoreReviews && filtered.length > 0 && (
               <div className="pt-10 max-w-[750px] text-sm font-light text-white/50 text-center">
                 <Separator />{" "}
                 <div className="bg-[#191919] px-3 -translate-y-1/2 w-fit mx-auto">
@@ -860,7 +861,7 @@ const ManageReviews = () => {
         </AnimatePresence>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ManageReviews
+export default ManageReviews;
